@@ -1,9 +1,32 @@
-import { ArrowRight, Code2, Github, ShieldCheck } from 'lucide-react'
+import { useState, type FormEvent } from 'react'
+import { ArrowRight, Github, ShieldCheck, Star, Users, BookOpen, GitFork } from 'lucide-react'
+import { useGithubProfile } from './hooks/useGithubProfile'
+import { calculateInsights, compactNumber } from './lib/insights'
 
 export default function App() {
-  return <div className="starter-page">
-    <header className="starter-header"><div className="starter-brand"><ShieldCheck size={25}/><strong>repo<span>verity</span></strong><small>LABS</small></div><a href="https://github.com/kobrymoataz/repoverity" target="_blank" rel="noreferrer"><Github size={17}/> View source</a></header>
-    <main className="starter-main"><div className="starter-eyebrow"><span/> OPEN SOURCE / V0.1.0</div><h1>See the work behind<br/><em>a GitHub profile.</em></h1><p>RepoVerity is a developer intelligence dashboard built around public data, clear signals and useful open-source work.</p><div className="starter-progress"><Code2 size={20}/><div><strong>Foundation is ready</strong><span>The next step is connecting GitHub's public API.</span></div><ArrowRight size={18}/></div></main>
-    <footer className="starter-footer">REPOVERITY <span>Public data. Real work. Open source.</span></footer>
+  const { username, snapshot, status, error, analyze, retry } = useGithubProfile()
+  const [input, setInput] = useState(username)
+  const info = snapshot && calculateInsights(snapshot.repositories)
+
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (input.trim()) analyze(input)
+  }
+
+  return <div className="v01-shell">
+    <header className="v01-header"><a href="https://github.com/kobrymoataz/repoverity" className="v01-brand"><ShieldCheck size={23}/> repo<span>verity</span></a><span>PUBLIC API / V0.1</span></header>
+    <main className="v01-main">
+      <div className="v01-kicker">DEVELOPER INTELLIGENCE</div>
+      <h1>Explore any public GitHub profile.</h1>
+      <p>Live profile data, repository counts and sample engagement, read directly from the GitHub REST API.</p>
+      <form className="v01-search" onSubmit={submit}><Github size={21}/><input value={input} onChange={e=>setInput(e.target.value)} placeholder="GitHub username" aria-label="GitHub username"/><button type="submit">Analyze <ArrowRight size={16}/></button></form>
+      {status === 'loading' && <div className="v01-message">Loading public profile...</div>}
+      {status === 'error' && <div className="v01-message"><strong>Lookup unsuccessful:</strong> {error} <button type="button" onClick={retry}>Retry</button></div>}
+      {status === 'success' && snapshot && info && <div className="v01-results">
+        <div className="v01-profile"><img src={snapshot.user.avatar_url} alt="Profile avatar"/><div><h2>{snapshot.user.name || snapshot.user.login}</h2><a href={snapshot.user.html_url} target="_blank" rel="noreferrer">@{snapshot.user.login}</a><p>{snapshot.user.bio || 'No public biography available.'}</p></div></div>
+        <div className="v01-metrics"><div><Users/><small>FOLLOWERS</small><strong>{compactNumber(snapshot.user.followers)}</strong></div><div><BookOpen/><small>PUBLIC REPOS</small><strong>{compactNumber(snapshot.user.public_repos)}</strong></div><div><Star/><small>STARS IN SAMPLE</small><strong>{compactNumber(info.stars)}</strong></div><div><GitFork/><small>FORKS IN SAMPLE</small><strong>{compactNumber(info.forks)}</strong></div></div>
+        <div className="v01-note">Sampling: the {snapshot.repositories.length} most recently updated public owned repositories, up to 100. No private data is accessed.</div>
+      </div>}
+    </main>
   </div>
 }
