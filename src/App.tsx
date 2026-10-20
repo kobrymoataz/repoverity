@@ -7,6 +7,8 @@ import {
   X, Zap, type LucideIcon,
 } from 'lucide-react'
 import { useGithubProfile } from './hooks/useGithubProfile'
+import { useGrowthHistory } from './hooks/useGrowthHistory'
+import { GrowthAnalytics } from './components/GrowthAnalytics'
 import { GithubApiError, normalizeUsername } from './lib/github'
 import {
   activeWithinDays, calculateInsights, compactNumber, filterRepositories,
@@ -37,6 +39,7 @@ function Logo({ compact = false }: { compact?: boolean }) {
 function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const mainNav = [
     { label: 'Overview', href: '#overview', icon: Layers3 },
+    { label: 'Growth analytics', href: '#growth', icon: TrendingUp },
     { label: 'Repository explorer', href: '#repositories', icon: Compass },
     { label: 'Portfolio signals', href: '#signals', icon: Activity },
   ]
@@ -65,7 +68,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
             <p>Readable code, useful insights and a roadmap shaped by real developers.</p>
             <a href={REPOSITORY_URL} target="_blank" rel="noreferrer">Explore repository <ArrowUpRight size={14}/></a>
           </div>
-          <div className="sidebar-foot"><span><span className="mini-online"/> Open-source preview</span><span>v0.2.0</span></div>
+          <div className="sidebar-foot"><span><span className="mini-online"/> Open-source preview</span><span>v0.3.0</span></div>
         </div>
       </aside>
     </>
@@ -155,9 +158,9 @@ function RepositoryItem({ repo }: { repo: GitHubRepository }) {
 
 function Roadmap() {
   const features = [
-    { icon: TrendingUp, title: 'Growth tracking', detail: 'Monitor daily follower and star changes after tracking begins.', status: 'V0.3' },
-    { icon: FileCheck2, title: 'Achievement guide', detail: 'Explore official achievements and their documented criteria.', status: 'V0.4' },
+    { icon: FileCheck2, title: 'Achievement guide', detail: 'Learn how to earn official GitHub badges through real contributions.', status: 'V0.4' },
     { icon: Sparkles, title: 'Repository advisor', detail: 'Actionable suggestions for making public projects easier to discover.', status: 'V0.5' },
+    { icon: ShieldCheck, title: 'Stable public release', detail: 'Polish security, accessibility, documentation and community onboarding.', status: 'V1.0' },
   ]
   return <section id="roadmap" className="roadmap-section">
     <div className="section-title-row"><div><div className="eyebrow">WHAT'S NEXT</div><h2>Built openly. Improved deliberately.</h2><p>We're starting with truthful public data, then adding useful capabilities one release at a time.</p></div><span className="planned-badge"><CircleDot size={13}/> ROADMAP</span></div>
@@ -174,6 +177,7 @@ function LoadingContent() {
 
 function App() {
   const { username, snapshot, status, error, analyze, retry } = useGithubProfile()
+  const growth = useGrowthHistory(snapshot, status === 'success')
   const [draftUsername, setDraftUsername] = useState(username)
   const [validationMessage, setValidationMessage] = useState<string | null>(null)
   const [query, setQuery] = useState('')
@@ -231,9 +235,9 @@ function App() {
         <div className="hero">
           <div className="hero-grid" aria-hidden="true"/><div className="hero-orb hero-orb-one" aria-hidden="true"/><div className="hero-orb hero-orb-two" aria-hidden="true"/>
           <div className="hero-copy">
-            <div className="hero-kicker"><span className="pulsing-dot"/> INTRODUCING REPOVERITY <span> / </span> V0.2</div>
+            <div className="hero-kicker"><span className="pulsing-dot"/> INTRODUCING REPOVERITY <span> / </span> V0.3</div>
             <h1>Make your GitHub<br/><span>presence count.</span></h1>
-            <p>Understand the work behind any public GitHub profile. Explore repositories, spot meaningful patterns, and build a portfolio worth following.</p>
+            <p>Explore public repositories, uncover meaningful portfolio signals, and chart real follower and star changes over time. No inflated numbers, just observations.</p>
             <div className="hero-tags"><span><Check size={14}/> Public data only</span><span><Check size={14}/> No account required</span><span><Check size={14}/> No follower bots</span></div>
           </div>
           <div className="lookup-box">
@@ -260,6 +264,19 @@ function App() {
             <Metric title="STARS IN SAMPLE" value={compactNumber(insights.stars)} note={`From ${total} loaded repositories`} icon={Star}/>
             <Metric title="FORKS IN SAMPLE" value={compactNumber(insights.forks)} note={`From ${total} loaded repositories`} icon={GitFork}/>
           </div>
+          <GrowthAnalytics
+            username={snapshot.user.login}
+            currentFollowers={snapshot.user.followers}
+            currentSampleStars={insights.stars}
+            profile={growth.profile}
+            enabled={growth.enabled}
+            storageError={growth.storageError}
+            limitReached={growth.limitReached}
+            onToggle={growth.toggleTracking}
+            onGoal={growth.updateGoal}
+            onRefresh={retry}
+            onClear={growth.clearHistory}
+          />
           <div className="insights-grid"><LanguagePanel languages={insights.languages}/><SignalPanel signals={insights.signals} total={total}/></div>
           <section className="repositories-section" id="repositories">
             <div className="section-title-row section-heading-repos"><div><div className="eyebrow">THE WORK BEHIND THE PROFILE</div><h2>Repository explorer</h2><p>Search, compare and open public repositories from this account.</p></div><a className="view-github-link" href={`${snapshot.user.html_url}?tab=repositories`} target="_blank" rel="noreferrer">View on GitHub <ArrowUpRight size={15}/></a></div>
@@ -267,7 +284,7 @@ function App() {
             <div className="repo-result-caption">SHOWING {Math.min(visibleCount, filteredRepositories.length)} OF {filteredRepositories.length} MATCHING REPOSITORIES</div>
             {filteredRepositories.length ? <div className="repo-grid">{filteredRepositories.slice(0,visibleCount).map(repo => <RepositoryItem key={repo.id} repo={repo}/>)}</div> : <div className="repo-empty"><Search size={23}/><h3>No repositories match.</h3><p>Try a different search or filter.</p><button type="button" onClick={()=>{setQuery('');setFilter('all')}}>Clear filters <ArrowRight size={15}/></button></div>}
             {visibleCount < filteredRepositories.length && <button type="button" className="load-more" onClick={()=>setVisibleCount(n=>n+6)}>Load more repositories <ArrowRight size={16}/></button>}
-            {snapshot.user.public_repos > total && <div className="sampling-note"><CircleDot size={15}/> V0.2 inspects the 100 most recently updated public repositories. Counts labeled “in sample” do not represent every repository.</div>}
+            {snapshot.user.public_repos > total && <div className="sampling-note"><CircleDot size={15}/> V0.3 inspects the 100 most recently updated public repositories. Counts labeled “in sample” do not represent every repository.</div>}
           </section>
         </div>}
 
