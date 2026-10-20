@@ -54,7 +54,7 @@ describe('repository insights', () => {
     expect(activeWithinDays({...base, pushed_at: '2027-01-01T00:00:00Z'}, 90, now)).toBe(false)
   })
   it('supports filters, text search and sorting', () => {
-    const repos = [base, {...base, id: 2, name: 'old', language: 'Python', stargazers_count: 0, pushed_at: '2025-01-01T00:00:00Z'}]
+    const repos = [base, {...base, id: 2, name: 'old', language: 'Python', topics: ['python'], stargazers_count: 0, pushed_at: '2025-01-01T00:00:00Z'}]
     expect(filterRepositories(repos, 'typescript', 'all', 'stars', now).map(repo => repo.name)).toEqual(['example'])
     expect(filterRepositories(repos, '', 'starred', 'stars', now)).toHaveLength(1)
     expect(filterRepositories(repos, '', 'active', 'recent', now)).toHaveLength(1)
