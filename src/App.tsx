@@ -21,6 +21,7 @@ import { workspaceFromHash, workspaceHref, type WorkspaceId } from './lib/naviga
 import type { GitHubRepository, GitHubSnapshot } from './types/github'
 
 const RepositoryExplorer = lazy(() => import('./components/RepositoryExplorer').then(m => ({ default: m.RepositoryExplorer })))
+const DeveloperAnalytics = lazy(() => import('./components/DeveloperAnalytics').then(m => ({ default: m.DeveloperAnalytics })))
 const GrowthAnalytics = lazy(() => import('./components/GrowthAnalytics').then(m => ({ default: m.GrowthAnalytics })))
 const AchievementLab = lazy(() => import('./components/AchievementLab').then(m => ({ default: m.AchievementLab })))
 const ContributionFinder = lazy(() => import('./components/ContributionFinder').then(m => ({ default: m.ContributionFinder })))
@@ -34,7 +35,7 @@ const navigation: { label: string; items: NavItem[] }[] = [
   { label: 'WORKSPACE', items: [
     { id: 'overview', label: 'Overview', icon: LayoutGrid },
     { id: 'repositories', label: 'Repositories', icon: BookOpen },
-    { id: 'analytics', label: 'Insights', icon: Activity },
+    { id: 'analytics', label: 'Analytics Pro', icon: Activity },
     { id: 'growth', label: 'Growth history', icon: TrendingUp },
   ] },
   { label: 'DEVELOPER TOOLS', items: [
@@ -51,7 +52,7 @@ const navigation: { label: string; items: NavItem[] }[] = [
 const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; category: string }> = {
   overview: { title: 'Overview', subtitle: 'Public GitHub data, organized for a closer look.', category: 'WORKSPACE' },
   repositories: { title: 'Repositories', subtitle: 'Explore public repositories with pagination, comparison and saved views.', category: 'EXPLORE' },
-  analytics: { title: 'Profile insights', subtitle: 'Language distribution, repository activity and metadata coverage.', category: 'ANALYZE' },
+  analytics: { title: 'Analytics Pro', subtitle: 'Compare profiles, explore public activity and understand repository signals.', category: 'ANALYZE' },
   growth: { title: 'Growth history', subtitle: 'Follow changes in recorded observations, not estimated history.', category: 'TRACK' },
   advisor: { title: 'Repository advisor', subtitle: 'Review public metadata and check repository files on demand.', category: 'IMPROVE' },
   contributions: { title: 'Find contributions', subtitle: 'Discover open issues that welcome contributors.', category: 'CONTRIBUTE' },
@@ -63,7 +64,7 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
 function Brand() {
   return <a className="rv-brand" href={workspaceHref('overview')} aria-label="RepoVerity home">
     <span className="rv-brand-icon"><GitBranch size={19} strokeWidth={2.15}/></span>
-    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.3</span></span>
+    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.4</span></span>
   </a>
 }
 
@@ -338,12 +339,10 @@ function App() {
           </Suspense>
         </div>}
 
-        {active === 'analytics' && isLoaded && <div className="rv-view">
-          <Metrics snapshot={snapshot} insights={insights}/>
-          <div className="rv-insights-grid rv-analytics-panels"><LanguageDistribution insights={insights}/><MetadataCoverage insights={insights}/></div>
-          <section className="rv-panel rv-analytics-method"><div className="rv-panel-header"><h2>How these figures are calculated</h2><Globe2 size={18}/></div>
-            <p>The follower and public repository counts come directly from GitHub. Stars, forks, language distribution and metadata indicators use the loaded sample of up to 100 recently updated public repositories. They are not comprehensive account totals or security ratings.</p>
-            <a className="rv-text-link" href={`${REPOSITORY_URL}/blob/main/docs/ARCHITECTURE.md`} target="_blank" rel="noopener noreferrer">Read methodology <ArrowUpRight size={16}/></a></section>
+        {active === 'analytics' && isLoaded && <div className="rv-view rv-feature-page">
+          <Suspense fallback={<AsyncFallback title="Developer analytics"/>}>
+            <DeveloperAnalytics key={`${snapshot.user.id}-${snapshot.fetchedAt}`} snapshot={snapshot} reducedMotion={animation.reduceMotion}/>
+          </Suspense>
         </div>}
 
         {active === 'growth' && isLoaded && <div className="rv-view rv-feature-page rv-growth-page"><Suspense fallback={<AsyncFallback title="Growth history"/>}>
@@ -357,7 +356,7 @@ function App() {
         {active === 'about' && <div className="rv-view"><AboutView/></div>}
 
         </motion.div></AnimatePresence>
-        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.3</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
+        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.4</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
       </main>
     </div>
   </div></MotionConfig>
