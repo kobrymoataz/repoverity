@@ -72,12 +72,12 @@ export function AchievementLab({ username, repositories }: { username: string; r
   ]
   return <section className="ach4-section" id="achievements" aria-labelledby="ach4-title">
     <div className="section-title-row ach4-top">
-      <div><div className="eyebrow">BUILD WITH INTENT · V0.4</div><h2 id="ach4-title">Achievement lab</h2><p>Understand the badges, plan meaningful contributions and keep an honest personal checklist.</p></div>
+      <div><div className="eyebrow">ACHIEVEMENTS / PERSONAL TRACKER</div><h2 id="ach4-title">Achievement lab</h2><p>Review achievement criteria and maintain a personal checklist.</p></div>
       <a className="ach4-profile-link" href={`https://github.com/${encodeURIComponent(username)}?tab=achievements`} target="_blank" rel="noreferrer">View GitHub badges <ArrowUpRight size={16}/></a>
     </div>
     <div className="ach4-headline">
       <div className="ach4-headline-icon"><Award size={26}/></div>
-      <div className="ach4-headline-text"><strong>Your journey, not a fabricated score.</strong><p>RepoVerity cannot award or reliably verify GitHub Achievements. “Earned” below means you manually confirmed it on your GitHub profile.</p></div>
+      <div className="ach4-headline-text"><strong>Track your own progress.</strong><p>RepoVerity cannot award or reliably verify GitHub Achievements. “Earned” below means you manually confirmed it on your GitHub profile.</p></div>
       <div className="ach4-counter"><b>{summary.earned}<span> / {TRACKABLE_ACHIEVEMENTS.length}</span></b><small>Self-reported</small></div>
     </div>
     <div className="ach4-tabs" role="group" aria-label="Achievement filter">{buttons.map(button =>

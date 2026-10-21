@@ -3,7 +3,7 @@ import {
   Activity, ArrowRight, ArrowUpRight, BookOpen, Check, CheckCircle2, ChevronRight,
   CircleAlert, CircleDot, ClipboardCopy, Download, FileCheck2,
   GitBranch, Globe2, Info, Layers3, LoaderCircle, RefreshCw, Search, ShieldCheck,
-  Sparkles, Star, Target, type LucideIcon,
+  ListChecks, Star, Target, type LucideIcon,
 } from 'lucide-react'
 import type { GitHubRepository } from '../types/github'
 import { adviceAsMarkdown, analyzePortfolio, type RepositoryAction } from '../lib/advisor'
@@ -39,7 +39,7 @@ function ScoreRing({ score }: { score: number | null }) {
   return <div className="adv5-ring" role="img" aria-label={score === null ? 'Metadata not assessed' : `Metadata coverage ${score} percent`}>
     <svg width="116" height="116" viewBox="0 0 116 116" aria-hidden="true">
       <circle cx="58" cy="58" r="45" stroke="#263d48" fill="none" strokeWidth="9"/>
-      <circle cx="58" cy="58" r="45" stroke="#75e5c3" fill="none" strokeWidth="9" strokeLinecap="round"
+      <circle cx="58" cy="58" r="45" stroke="#a4b9d5" fill="none" strokeWidth="9" strokeLinecap="round"
         strokeDasharray={`${Math.PI * 90}`} strokeDashoffset={`${Math.PI * 90 * (1 - safe / 100)}`} transform="rotate(-90 58 58)"/>
     </svg>
     <div><strong>{score === null ? 'N/A' : `${score}%`}</strong><span>METADATA</span></div>
@@ -146,20 +146,20 @@ export function RepositoryAdvisor({ repositories, username }: AdvisorProps) {
 
   return <section className="adv5-section" id="advisor" aria-labelledby="adv5-title">
     <div className="adv5-heading">
-      <div><div className="eyebrow">REPOVERITY / RELEASE 0.5</div><h2 id="adv5-title">Repository advisor <Sparkles size={25}/></h2>
+      <div><div className="eyebrow">REPOSITORY REVIEW</div><h2 id="adv5-title">Repository advisor <ListChecks size={23}/></h2>
         <p>Know what to improve next. Every suggestion points to public metadata or an explicitly requested file-presence check.</p></div>
       <span className="adv5-label"><CircleDot size={13}/> TRANSPARENT SIGNALS</span>
     </div>
 
     <div className="adv5-hero">
       <div className="adv5-hero-copy"><span className="adv5-hero-kicker"><Layers3 size={14}/> PORTFOLIO REVIEW</span>
-        <h3>From public data to<br/><em>clear next steps.</em></h3>
-        <p>No fabricated scores, no automated stars, no fake vulnerability findings. This advisor turns simple GitHub signals into a prioritized improvement checklist.</p>
+        <h3>Repository metadata,<br/><em>reviewed in context.</em></h3>
+        <p>This read-only review turns public GitHub metadata into a prioritized maintenance checklist. It does not inspect source code for vulnerabilities.</p>
         <div className="adv5-hero-tags"><span><Check size={13}/> Read-only</span><span><Check size={13}/> No token</span><span><Check size={13}/> Explainable</span></div>
       </div>
       <div className="adv5-kpi-grid">
         <MetricCard icon={GitBranch} label="REPOS ASSESSED" value={String(summary.assessed)} sub={`Of ${summary.totalSampled} sampled · ${summary.excluded} excluded`}/>
-        <MetricCard icon={Target} label="METADATA COVERAGE" value={summary.meanMetadataCoverage === null ? '—' : `${summary.meanMetadataCoverage}%`} sub="Average of four visible checks"/>
+        <MetricCard icon={Target} label="METADATA COVERAGE" value={summary.meanMetadataCoverage === null ? 'N/A' : `${summary.meanMetadataCoverage}%`} sub="Average of four visible checks"/>
         <MetricCard icon={FileCheck2} label="OPPORTUNITIES" value={String(summary.improvementCandidates)} sub="Repos with suggested improvements"/>
         <MetricCard icon={ShieldCheck} label="LICENSE METADATA" value={String(summary.missingLicense)} sub="Repos without recognized license"/>
       </div>
@@ -232,6 +232,6 @@ export function RepositoryAdvisor({ repositories, username }: AdvisorProps) {
         </div>}
       </div>}
 
-    <p className="adv5-bottom-note"><Info size={15}/> Reviewing @{username}: at most 100 most recently updated owned public repositories. No source code or dependency packages are examined; nothing here should be interpreted as a vulnerability scan, legal review, security certification or AI-generated finding.</p>
+    <p className="adv5-bottom-note"><Info size={15}/> Reviewing @{username}: at most 100 most recently updated owned public repositories. No source code or dependency packages are examined; nothing here should be interpreted as a vulnerability scan, legal review, security certification or automated security conclusion.</p>
   </section>
 }
