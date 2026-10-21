@@ -4,14 +4,14 @@
 
 [![Quality checks](https://github.com/kobrymoataz/repoverity/actions/workflows/ci.yml/badge.svg)](https://github.com/kobrymoataz/repoverity/actions/workflows/ci.yml)
 [![GitHub Pages](https://github.com/kobrymoataz/repoverity/actions/workflows/deploy.yml/badge.svg)](https://github.com/kobrymoataz/repoverity/actions/workflows/deploy.yml)
-![Release](https://img.shields.io/badge/version-0.4.0-83E0C3?style=flat-square)
+![Release](https://img.shields.io/badge/version-0.5.0-83E0C3?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-7294A0?style=flat-square)
 
 **[Open live dashboard](https://kobrymoataz.github.io/repoverity/)** · [Report an issue](https://github.com/kobrymoataz/repoverity/issues) · [Contribute](CONTRIBUTING.md)
 
-RepoVerity is a free, open-source dashboard for public GitHub account and repository intelligence. Enter a username or profile URL to see transparent portfolio indicators, explore repositories, and optionally record *real observations* of follower and sampled-star growth over time. No account login or personal access token is required.
+RepoVerity is a free, open-source dashboard for public GitHub account intelligence and explainable repository improvements. Enter a username or profile URL to see transparent portfolio indicators, explore repositories, and optionally record *real observations* of follower and sampled-star growth over time. No account login or personal access token is required.
 
-## Available in V0.4
+## Available in V0.5
 
 ### Profile and repository intelligence
 
@@ -34,6 +34,17 @@ RepoVerity is a free, open-source dashboard for public GitHub account and reposi
 **Important:** Tracking begins only when you click **Start tracking**. An enabled profile gets a new observation when you visit and fetch it; this static GitHub Pages app does **not** run background jobs. Browser storage is device/profile-specific, and clearing browser data removes the timeline. The CSV export is your backup. Sharing a profile link does not share browser-local history.
 
 **Accuracy:** Account follower count and public repository count come from GitHub's user endpoint. Repository stars/forks are summed from **up to 100 most recently updated owned public repositories**, and the set of sampled repositories may change over time. **Do not interpret sampled-star deltas as the account's total star gains.** Indicators are not a security audit.
+
+## Repository advisor (new in V0.5)
+
+- Rank sampled public repositories by **four explainable metadata checks** (description, topics, GitHub-recognized license and recent push).
+- Review improvement recommendations prioritized by evidence and practical next steps.
+- Optionally inspect one selected public repository's **directory listings**, locating common README, contribution, security-policy, CI and Dependabot file names. **1 to 4 additional public API requests only when you click Inspect.**
+- Copy or download the selected repository's Markdown improvement plan.
+- Archived repositories and forks are excluded from the metadata ranking. Partial failed inspections never imply files are missing.
+- **Not a vulnerability scan, AI-generated security audit, compliance score or code-quality certification.** The application does not read source-file contents or detect security issues.
+
+Read [Repository advisor methodology and limits](docs/REPOSITORY_ADVISOR.md) before using these indicators for any decisions.
 
 ## Run locally
 
@@ -58,7 +69,7 @@ npm run build
 
 - React 19 + TypeScript + Vite 8 + Tailwind CSS 4.
 - Public GitHub REST API (no tokens and no GitHub login).
-- In-memory API response cache (2 minutes).
+- In-memory public profile API cache (2 minutes); optional repository file listing cache (10 minutes).
 - Browser `localStorage` for growth observations and follower goals (`repoverity:growth:v1`) and a separate manual badge checklist (`repoverity:achievements:v1`).
 - Lightweight SVG charts without a charting service or extra runtime dependency.
 - GitHub Actions CI and GitHub Pages deployment on `main`.
@@ -94,8 +105,8 @@ GitHub Pages source must be **GitHub Actions**. The workflow builds with `PAGES_
 - **V0.1**: Foundation and responsive UI.
 - **V0.2**: Public API, repository intelligence, README, tests and Pages.
 - **V0.3**: Honest local growth tracking, charts, milestones and CSV export.
-- **V0.4**: Educational achievement guide and legitimate contribution discovery. **Current release.**
-- **V0.5**: Practical repository advice and transparent security hygiene signals.
+- **V0.4**: Educational achievement guide and legitimate contribution discovery.
+- **V0.5**: Practical repository advice and transparent file-presence signals. **Current release.**
 - **V1.0**: Stable release with refined security, accessibility, reliability and community support.
 
 ## Community

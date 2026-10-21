@@ -1,3 +1,25 @@
+# RepoVerity V0.5 release notes
+
+## Included
+- Repository advisor powered by four transparent public-metadata checks; no unexplained AI scores.
+- Portfolio-level metadata coverage and prioritized, actionable suggestions.
+- Optional public repository structure checks for recognized documentation, CI and safety-policy file names.
+- On-demand GitHub API access only, with explicit error and rate-limit handling.
+- Copyable and downloadable Markdown plans for genuine repository improvements.
+- Responsive UI, dedicated tests, methodology and limitations in [REPOSITORY_ADVISOR.md](REPOSITORY_ADVISOR.md).
+
+## Limits and privacy
+- Static GitHub Pages site; no account access, credentials, analytics backend or automatic file changes.
+- Metadata score is not a code-quality score, security rating, legal assessment or vulnerability finding.
+- Directory presence checks cannot prove workflow status, security practices or file contents.
+- Results cover up to 100 most recently updated owned public repositories, with forks/archives excluded from ranking.
+- Public API rate limits apply; optional structural inspection is user-initiated and cached in memory.
+
+## Next
+- V1.0: accessibility review, reliability improvements, stable release packaging and community onboarding.
+
+---
+
 # RepoVerity V0.4 release notes
 
 ## Included

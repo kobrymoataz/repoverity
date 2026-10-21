@@ -1,9 +1,9 @@
 {
   "name": "repoverity",
   "private": true,
-  "version": "0.4.0",
+  "version": "0.5.0",
   "type": "module",
-  "description": "A lightweight, open-source GitHub profile and repository intelligence dashboard.",
+  "description": "Open-source GitHub growth analytics, achievements, contributions, and transparent repository advisor.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
