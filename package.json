@@ -1,7 +1,7 @@
 {
   "name": "repoverity",
   "private": true,
-  "version": "0.3.0",
+  "version": "0.4.0",
   "type": "module",
   "description": "A lightweight, open-source GitHub profile and repository intelligence dashboard.",
   "scripts": {

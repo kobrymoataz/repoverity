@@ -29,3 +29,9 @@ Please do not automate follows, stars, repository spam or other manufactured eng
 ## Code conventions
 
 Use TypeScript for application logic; prefer simple components and accessible HTML. Prefer plain, explicit calculations to opaque scores. Keep dependency additions justified and documented.
+
+## Real contributions first
+
+The V0.4 Contribution finder lists open, unassigned GitHub issues. Check the upstream repository's guidelines and ask maintainers before claiming an issue. Do not submit spam PRs, manufacture issues, request fake reviews or use engagement bots for Achievements.
+
+Badge checklist states are explicitly **self-reported** and never presented as GitHub-verified.
