@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.3.0] - Prepared for release
+
+- Added manual GitHub pagination beyond the initial 100-repository sample.
+- Added language, topic, status and search filters with four sorting modes.
+- Added table and card layouts, three-repository comparison and CSV export.
+- Added locally saved filter views per account, validation and explicit data scope labels.
+- Preserved the V1.2 motion system and existing storage/backup formats.
+- Added extensive unit tests and explorer documentation.
+
 ## [1.2.0] - Planned release
 
 - Added Motion for React transitions for the developer workspace and navigation.
