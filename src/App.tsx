@@ -1,13 +1,18 @@
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react'
+import { AnimatePresence, motion, MotionConfig } from 'motion/react'
 import {
   Activity, AlertCircle, ArrowRight, ArrowUpRight, Award, BookOpen, Check,
   ChevronDown, Clock3, Code2, Compass, Copy, Database, ExternalLink,
   FileCheck2, Filter, GitBranch, GitFork, Github, Globe2, LayoutGrid,
-  MapPin, Menu, RefreshCw, Search, ShieldCheck, Star, TrendingUp,
+  MapPin, Menu, RefreshCw, Search, ShieldCheck, SlidersHorizontal, Star, TrendingUp,
   Users, X, type LucideIcon,
 } from 'lucide-react'
 import { useGithubProfile } from './hooks/useGithubProfile'
 import { useGrowthHistory } from './hooks/useGrowthHistory'
+import { useMotionPreference } from './hooks/useMotionPreference'
+import { OverviewReveal } from './components/OverviewReveal'
+import { CommandPalette } from './components/CommandPalette'
+import { MOTION_TIMING } from './lib/motionPreferences'
 import { GithubApiError, normalizeUsername } from './lib/github'
 import {
   calculateInsights, compactNumber, filterRepositories,
@@ -58,13 +63,18 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
 function Brand() {
   return <a className="rv-brand" href={workspaceHref('overview')} aria-label="RepoVerity home">
     <span className="rv-brand-icon"><GitBranch size={19} strokeWidth={2.15}/></span>
-    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.1</span></span>
+    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.2</span></span>
   </a>
 }
 
-function Sidebar({ active, open, close, username }: { active: WorkspaceId; open: boolean; close: () => void; username: string }) {
+function Sidebar({ active, open, close, username, reduced }: { active: WorkspaceId; open: boolean; close: () => void; username: string; reduced: boolean }) {
   return <>
-    {open && <button type="button" className="rv-scrim" aria-label="Close navigation" onClick={close}/>}
+    <AnimatePresence>
+      {open && <motion.button type="button" key="navigation-scrim" className="rv-scrim"
+        aria-label="Close navigation" onClick={close}
+        initial={reduced ? false : { opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        transition={{ duration: reduced ? 0 : MOTION_TIMING.exit }}/>} 
+    </AnimatePresence>
     <aside className={`rv-sidebar ${open ? 'rv-sidebar-open' : ''}`} aria-label="Primary navigation">
       <div className="rv-sidebar-top"><Brand/><button type="button" className="rv-nav-close" onClick={close} aria-label="Close menu"><X size={18}/></button></div>
       <div className="rv-sidebar-scroll">
@@ -72,11 +82,14 @@ function Sidebar({ active, open, close, username }: { active: WorkspaceId; open:
         {navigation.map(group => <div className="rv-navigation-group" key={group.label}>
           <div className="rv-navigation-label">{group.label}</div>
           <nav aria-label={group.label} className="rv-nav-list">
-            {group.items.map(item => <a href={workspaceHref(item.id)} key={item.id} onClick={close}
+            {group.items.map(item => <motion.a href={workspaceHref(item.id)} key={item.id} onClick={close}
+              whileHover={reduced ? undefined : { x: 2 }} whileTap={reduced ? undefined : { scale: 0.99 }}
+              transition={{ duration: reduced ? 0 : MOTION_TIMING.hover }}
               className={`rv-nav-link ${active === item.id ? 'rv-nav-active' : ''}`} aria-current={active === item.id ? 'page' : undefined}>
               <item.icon size={17} strokeWidth={1.85}/><span>{item.label}</span>
-              {active === item.id && <span className="rv-nav-indicator" aria-hidden="true"/>}
-            </a>)}
+              {active === item.id && <motion.span layoutId="rv-active-navigation" className="rv-nav-indicator"
+                aria-hidden="true" transition={{ type: 'spring', stiffness: 550, damping: 44 }}/>} 
+            </motion.a>)}
           </nav>
         </div>)}
       </div>
@@ -206,8 +219,10 @@ function AboutView() {
 function App() {
   const { username, snapshot, status, error, analyze, retry } = useGithubProfile()
   const growth = useGrowthHistory(snapshot, status === 'success')
+  const animation = useMotionPreference()
   const [active, setActive] = useState<WorkspaceId>(()=>workspaceFromHash(window.location.hash))
   const [menuOpen, setMenuOpen] = useState(false)
+  const [commandOpen, setCommandOpen] = useState(false)
   const [draftUsername, setDraftUsername] = useState(username)
   const [validationMessage, setValidationMessage] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
@@ -233,11 +248,16 @@ function App() {
     function shortcuts(event: KeyboardEvent) {
       const element = event.target as HTMLElement | null
       const editing = element?.matches('input,textarea,select,[contenteditable="true"]')
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        setCommandOpen(previous => !previous)
+        return
+      }
       if (event.key === '/' && !editing && !event.metaKey && !event.ctrlKey && !event.altKey) {
         event.preventDefault()
         searchInputRef.current?.focus()
       }
-      if (event.key === 'Escape') setMenuOpen(false)
+      if (event.key === 'Escape') { setMenuOpen(false); setCommandOpen(false) }
     }
     window.addEventListener('keydown', shortcuts)
     return () => window.removeEventListener('keydown', shortcuts)
@@ -271,27 +291,45 @@ function App() {
   const isLoaded = status === 'success' && snapshot && insights
   const title = viewTitles[active]
 
-  return <div className="rv-app">
+  return <MotionConfig reducedMotion={animation.reduceMotion ? "always" : "user"}><div className="rv-app">
     <a className="rv-skip" href="#main-content" onClick={event=>{event.preventDefault();document.getElementById('main-content')?.focus()}}>Skip to content</a>
-    <Sidebar active={active} open={menuOpen} close={()=>setMenuOpen(false)} username={username}/>
+    <Sidebar active={active} open={menuOpen} close={()=>setMenuOpen(false)} username={username} reduced={animation.reduceMotion}/>
+    <CommandPalette open={commandOpen} close={()=>setCommandOpen(false)} reduced={animation.reduceMotion}
+      navigate={id => { window.location.hash = workspaceHref(id); setCommandOpen(false) }}/>
     <div className="rv-main-column">
       <header className="rv-topbar">
         <div className="rv-topbar-left"><button type="button" className="rv-mobile-menu" aria-label="Open menu" onClick={()=>setMenuOpen(true)}><Menu size={20}/></button>
           <span className="rv-topbar-home">Workspace</span><span className="rv-topbar-separator">/</span><span className="rv-topbar-current">{title.title}</span>
         </div>
-        <div className="rv-topbar-right"><span className="rv-topbar-public"><span className="rv-live-indicator"/>Public API</span>
+        <div className="rv-topbar-right">
+          <button className="rv-command-trigger" type="button" aria-label="Quick switch workspaces" title="Open quick switch (Command K or Control K)"
+            onClick={()=>setCommandOpen(true)}><Search size={16}/><span>Quick switch</span><kbd>⌘ K</kbd></button>
+          <button type="button" className="rv-motion-control" onClick={animation.toggle}
+            disabled={animation.systemReduced}
+            aria-pressed={animation.reduceMotion}
+            aria-label={animation.systemReduced ? 'Animations reduced by system preference' : animation.reduceMotion ? 'Enable interface animations' : 'Reduce interface animations'}
+            title={animation.storageError ? 'Preference could not be saved on this device' : animation.systemReduced ? 'System reduced-motion setting is active' : animation.reduceMotion ? 'Enable animations' : 'Reduce animations'}>
+            <SlidersHorizontal size={15}/><span>{animation.reduceMotion ? 'Motion reduced' : 'Motion on'}</span>
+          </button><span className="rv-topbar-public"><span className="rv-live-indicator"/>Public API</span>
           {isLoaded && <button type="button" className="rv-topbar-icon" onClick={retry} aria-label="Refresh account data" title="Refresh account data"><RefreshCw size={16}/></button>}
           <a className="rv-topbar-github" href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer" aria-label="Open RepoVerity source code"><Github size={17}/><span>GitHub</span><ArrowUpRight size={14}/></a>
         </div>
       </header>
       <main className="rv-content" id="main-content" tabIndex={-1}>
+        <AnimatePresence mode="wait" initial={false}>
+        <motion.div key={active} className="rv-motion-page"
+          initial={animation.reduceMotion ? false : { opacity: 0, y: 9 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={animation.reduceMotion ? { opacity: 1 } : { opacity: 0, y: -5 }}
+          transition={{ duration: animation.reduceMotion ? 0 : MOTION_TIMING.navigate, ease: 'easeOut' }}>
         <SectionIntro view={active} action={isLoaded ? <button type="button" className="rv-outline-button" onClick={copyShareLink}>{copied ? <Check size={16}/> : <Copy size={16}/>} {copied ? 'Link copied' : 'Share view'}</button> : undefined}/>
         <div className="rv-top-search"><AccountSearch value={draftUsername} setValue={value=>{setDraftUsername(value);setValidationMessage(null)}} onSubmit={onSubmit} error={validationMessage} busy={status==='loading'} inputRef={searchInputRef}/><div className="rv-top-search-footer"><span>Public GitHub accounts only. No authorization required.</span><span>Press <kbd>/</kbd> to focus search</span></div></div>
 
         {active !== 'privacy' && active !== 'about' && active !== 'contributions' && status === 'loading' && <LoadingProfile/>}
         {active !== 'privacy' && active !== 'about' && active !== 'contributions' && status === 'error' && <ErrorProfile message={error} retry={retry}/>}
 
-        {active === 'overview' && isLoaded && <div className="rv-view rv-overview-view" key={`overview-${snapshot.user.id}`}>
+        {active === 'overview' && isLoaded && <OverviewReveal key={`overview-${snapshot.user.id}`} reduced={animation.reduceMotion}>
+          <div className="rv-view rv-overview-view">
           <ProfileCard snapshot={snapshot}/>
           <Metrics snapshot={snapshot} insights={insights}/>
           <div className="rv-section-top"><div><span className="rv-kicker">PORTFOLIO</span><h2>Project signals</h2></div><a className="rv-text-link" href={workspaceHref('analytics')}>Explore insights <ArrowRight size={16}/></a></div>
@@ -299,12 +337,17 @@ function App() {
           <div className="rv-section-top"><div><span className="rv-kicker">RECENTLY UPDATED</span><h2>Public repositories</h2></div><a className="rv-text-link" href={workspaceHref('repositories')}>All repositories <ArrowRight size={16}/></a></div>
           <section className="rv-table-panel"><RepositoryTable repositories={[...snapshot.repositories].sort((a,b)=>Date.parse(b.pushed_at||b.updated_at)-Date.parse(a.pushed_at||a.updated_at)).slice(0,6)} condensed/></section>
           <div className="rv-footnote"><Globe2 size={15}/>This account has {snapshot.user.public_repos} public repositories. Stars and forks reflect only the sample displayed here.</div>
-        </div>}
+          </div>
+        </OverviewReveal>}
 
         {active === 'repositories' && isLoaded && <div className="rv-view">
           <div className="rv-view-summary"><span><BookOpen size={17}/>{snapshot.repositories.length} loaded repositories</span><a href={`${snapshot.user.html_url}?tab=repositories`} target="_blank" rel="noopener noreferrer">Open on GitHub <ArrowUpRight size={15}/></a></div>
           <div className="rv-repo-toolbar"><div className="rv-filter-tabs" role="group" aria-label="Repository status filter">
-            {([['all','All'],['starred','With stars'],['active','Active recently']] as const).map(([value,label])=><button type="button" key={value} aria-pressed={filter===value} className={filter===value?'rv-filter-selected':''} onClick={()=>setFilter(value)}>{label}</button>)}
+            {([['all','All'],['starred','With stars'],['active','Active recently']] as const).map(([value,label])=><motion.button type="button" key={value} aria-pressed={filter===value} className={filter===value?'rv-filter-selected':''} onClick={()=>setFilter(value)}
+              whileTap={animation.reduceMotion ? undefined : { scale: 0.975 }}>
+              {filter === value && <motion.span layoutId="rv-active-repo-filter" className="rv-filter-motion-indicator" aria-hidden="true"
+                transition={{ type: 'spring', stiffness: 500, damping: 42 }}/>}<span>{label}</span>
+            </motion.button>)}
           </div><div className="rv-repo-controls"><label className="rv-small-search"><Search size={16}/><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Find a repository" aria-label="Search repository list"/></label>
           <label className="rv-select"><Filter size={15}/><select value={sort} onChange={event=>setSort(event.target.value as RepositorySort)} aria-label="Sort repositories"><option value="stars">Most stars</option><option value="recent">Recently pushed</option><option value="forks">Most forks</option></select><ChevronDown size={14}/></label></div></div>
           <section className="rv-table-panel"><div className="rv-table-panel-heading"><strong>Repository index</strong><span>{filteredRepositories.length} matching results</span></div><RepositoryTable repositories={filteredRepositories.slice(0,visibleCount)}/>
@@ -330,10 +373,11 @@ function App() {
         {active === 'privacy' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Data management"/>}><DataPortability/></Suspense></div>}
         {active === 'about' && <div className="rv-view"><AboutView/></div>}
 
-        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.1</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
+        </motion.div></AnimatePresence>
+        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.2</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
       </main>
     </div>
-  </div>
+  </div></MotionConfig>
 }
 
 export default App
