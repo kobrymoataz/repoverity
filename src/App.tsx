@@ -364,7 +364,7 @@ function App() {
         </div>}
 
         {active === 'growth' && isLoaded && <div className="rv-view rv-feature-page rv-growth-page"><Suspense fallback={<AsyncFallback title="Growth history"/>}>
-          <GrowthAnalytics username={snapshot.user.login} currentFollowers={snapshot.user.followers} currentSampleStars={insights.stars} profile={growth.profile} enabled={growth.enabled} storageError={growth.storageError} limitReached={growth.limitReached} onToggle={growth.toggleTracking} onGoal={growth.updateGoal} onRefresh={retry} onClear={growth.clearHistory}/>
+          <GrowthAnalytics username={snapshot.user.login} currentFollowers={snapshot.user.followers} currentSampleStars={insights.stars} profile={growth.profile} enabled={growth.enabled} storageError={growth.storageError} limitReached={growth.limitReached} onToggle={growth.toggleTracking} onGoal={growth.updateGoal} onRefresh={retry} onClear={growth.clearHistory} reducedMotion={animation.reduceMotion}/>
         </Suspense></div>}
 
         {active === 'achievements' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Achievements"/>}><AchievementLab username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}

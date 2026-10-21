@@ -1,4 +1,6 @@
 import { useId, useMemo, useState } from 'react'
+import { motion } from 'motion/react'
+import { MOTION_TIMING } from '../lib/motionPreferences'
 import {
   Activity, ArrowDownRight, ArrowUpRight, CalendarDays, Check,
   Download, HardDrive, Pause, Play, RefreshCw, ShieldCheck,
@@ -15,7 +17,7 @@ const formatDate = (timestamp: number) => new Intl.DateTimeFormat('en', {
   timeZone: 'UTC', month: 'short', day: 'numeric', year: 'numeric',
 }).format(timestamp)
 
-function GrowthChart({ points, metric }: { points: GrowthPoint[]; metric: GrowthMetric }) {
+function GrowthChart({ points, metric, reduced }: { points: GrowthPoint[]; metric: GrowthMetric; reduced: boolean }) {
   const gradientId = useId().replace(/:/g, '')
   if (points.length < 2) return null
 
@@ -52,8 +54,14 @@ function GrowthChart({ points, metric }: { points: GrowthPoint[]; metric: Growth
           <text x={pad.left-13} y={y+4} textAnchor="end" className="growth-axis-label">{compactNumber(Math.round(label))}</text>
         </g>
       })}
-      <path d={area} fill={`url(#${gradientId})`}/>
-      <path d={line} fill="none" stroke="#a7bddd" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+      <motion.path key={`area-${metric}-${points[0].at}-${points.at(-1)?.at}`}
+        d={area} fill={`url(#${gradientId})`}
+        initial={reduced ? false : { opacity: 0 }} animate={{ opacity: 1 }}
+        transition={{ duration: reduced ? 0 : MOTION_TIMING.chart / 2 }}/>
+      <motion.path key={`line-${metric}-${points[0].at}-${points.at(-1)?.at}`}
+        d={line} fill="none" stroke="#a7bddd" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"
+        initial={reduced ? false : { pathLength: 0, opacity: 0.8 }} animate={{ pathLength: 1, opacity: 1 }}
+        transition={{ duration: reduced ? 0 : MOTION_TIMING.chart, ease: 'easeOut' }}/>
       {coords.length <= 35 && coords.map(({ x, y, point }) => <circle key={point.at} cx={x} cy={y} r="4.5" stroke="#111820" strokeWidth="2.5" fill="#c3d3e9"><title>{`${formatDate(point.at)}: ${point[metric].toLocaleString('en')} ${caption}`}</title></circle>)}
       <text x={pad.left} y={height-10} className="growth-axis-label">{formatDate(points[0].at)}</text>
       <text x={width-pad.right} y={height-10} textAnchor="end" className="growth-axis-label">{formatDate(points[points.length-1].at)}</text>
@@ -91,6 +99,7 @@ interface GrowthAnalyticsProps {
   enabled: boolean
   storageError: boolean
   limitReached: boolean
+  reducedMotion?: boolean
   onToggle: () => void
   onGoal: (value: number) => void
   onRefresh: () => void
@@ -99,7 +108,7 @@ interface GrowthAnalyticsProps {
 
 export function GrowthAnalytics({
   username, currentFollowers, currentSampleStars, profile, enabled,
-  storageError, limitReached, onToggle, onGoal, onRefresh, onClear,
+  storageError, limitReached, onToggle, onGoal, onRefresh, onClear, reducedMotion = false,
 }: GrowthAnalyticsProps) {
   const [range, setRange] = useState<GrowthRange>('all')
   const [metric, setMetric] = useState<GrowthMetric>('followers')
@@ -149,7 +158,7 @@ export function GrowthAnalytics({
             {([['7d','7D'],['30d','30D'],['all','ALL']] as const).map(([value,label]) => <button type="button" key={value} aria-pressed={range===value} className={range===value ? 'selected' : ''} onClick={()=>setRange(value)}>{label}</button>)}
           </div>
         </div>
-        {points.length >= 2 ? <GrowthChart points={points} metric={metric}/> : <div className="growth-empty">
+        {points.length >= 2 ? <GrowthChart points={points} metric={metric} reduced={reducedMotion}/> : <div className="growth-empty">
           <span className="growth-empty-icon"><TrendingUp size={28}/></span>
           <h3>{!profile.points.length ? 'Your first checkpoint starts here.' : 'One checkpoint, no invented trend.'}</h3>
           <p>{!profile.points.length
