@@ -11,6 +11,7 @@ import { useGrowthHistory } from './hooks/useGrowthHistory'
 import { GrowthAnalytics } from './components/GrowthAnalytics'
 import { AchievementLab } from './components/AchievementLab'
 import { ContributionFinder } from './components/ContributionFinder'
+import { RepositoryAdvisor } from './components/RepositoryAdvisor'
 import { GithubApiError, normalizeUsername } from './lib/github'
 import {
   activeWithinDays, calculateInsights, compactNumber, filterRepositories,
@@ -44,6 +45,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
     { label: 'Growth analytics', href: '#growth', icon: TrendingUp },
     { label: 'Achievement lab', href: '#achievements', icon: Award },
     { label: 'Contribution finder', href: '#contributions', icon: GitPullRequest },
+    { label: 'Repository advisor', href: '#advisor', icon: Sparkles },
     { label: 'Repository explorer', href: '#repositories', icon: Compass },
     { label: 'Portfolio signals', href: '#signals', icon: Activity },
   ]
@@ -72,7 +74,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
             <p>Readable code, useful insights and a roadmap shaped by real developers.</p>
             <a href={REPOSITORY_URL} target="_blank" rel="noreferrer">Explore repository <ArrowUpRight size={14}/></a>
           </div>
-          <div className="sidebar-foot"><span><span className="mini-online"/> Open-source preview</span><span>v0.4.0</span></div>
+          <div className="sidebar-foot"><span><span className="mini-online"/> Open-source preview</span><span>v0.5.0</span></div>
         </div>
       </aside>
     </>
@@ -163,7 +165,7 @@ function RepositoryItem({ repo }: { repo: GitHubRepository }) {
 function Roadmap() {
   const features = [
     { icon: FileCheck2, title: 'Achievement lab + issue finder', detail: 'Educational badge roadmap and real open-source discovery.', status: 'V0.4', done: true },
-    { icon: Sparkles, title: 'Repository advisor', detail: 'Actionable suggestions for making public projects easier to discover.', status: 'V0.5', done: false },
+    { icon: Sparkles, title: 'Repository advisor', detail: 'Public metadata recommendations and on-demand file hygiene checks.', status: 'V0.5', done: true },
     { icon: ShieldCheck, title: 'Stable public release', detail: 'Polish security, accessibility, documentation and community onboarding.', status: 'V1.0', done: false },
   ]
   return <section id="roadmap" className="roadmap-section">
@@ -239,9 +241,9 @@ function App() {
         <div className="hero">
           <div className="hero-grid" aria-hidden="true"/><div className="hero-orb hero-orb-one" aria-hidden="true"/><div className="hero-orb hero-orb-two" aria-hidden="true"/>
           <div className="hero-copy">
-            <div className="hero-kicker"><span className="pulsing-dot"/> INTRODUCING REPOVERITY <span> / </span> V0.4</div>
+            <div className="hero-kicker"><span className="pulsing-dot"/> INTRODUCING REPOVERITY <span> / </span> V0.5</div>
             <h1>Make your GitHub<br/><span>presence count.</span></h1>
-            <p>Explore public repositories, track real growth, understand GitHub Achievements and discover open-source issues worth solving. No manufactured engagement.</p>
+            <p>Explore public repositories, track real growth, discover open-source issues and improve repository documentation with transparent advice. No manufactured engagement.</p>
             <div className="hero-tags"><span><Check size={14}/> Public data only</span><span><Check size={14}/> No account required</span><span><Check size={14}/> No follower bots</span></div>
           </div>
           <div className="lookup-box">
@@ -283,6 +285,7 @@ function App() {
           />
           <AchievementLab username={snapshot.user.login} repositories={snapshot.repositories}/>
           <ContributionFinder/>
+          <RepositoryAdvisor username={snapshot.user.login} repositories={snapshot.repositories}/>
           <div className="insights-grid"><LanguagePanel languages={insights.languages}/><SignalPanel signals={insights.signals} total={total}/></div>
           <section className="repositories-section" id="repositories">
             <div className="section-title-row section-heading-repos"><div><div className="eyebrow">THE WORK BEHIND THE PROFILE</div><h2>Repository explorer</h2><p>Search, compare and open public repositories from this account.</p></div><a className="view-github-link" href={`${snapshot.user.html_url}?tab=repositories`} target="_blank" rel="noreferrer">View on GitHub <ArrowUpRight size={15}/></a></div>
@@ -290,7 +293,7 @@ function App() {
             <div className="repo-result-caption">SHOWING {Math.min(visibleCount, filteredRepositories.length)} OF {filteredRepositories.length} MATCHING REPOSITORIES</div>
             {filteredRepositories.length ? <div className="repo-grid">{filteredRepositories.slice(0,visibleCount).map(repo => <RepositoryItem key={repo.id} repo={repo}/>)}</div> : <div className="repo-empty"><Search size={23}/><h3>No repositories match.</h3><p>Try a different search or filter.</p><button type="button" onClick={()=>{setQuery('');setFilter('all')}}>Clear filters <ArrowRight size={15}/></button></div>}
             {visibleCount < filteredRepositories.length && <button type="button" className="load-more" onClick={()=>setVisibleCount(n=>n+6)}>Load more repositories <ArrowRight size={16}/></button>}
-            {snapshot.user.public_repos > total && <div className="sampling-note"><CircleDot size={15}/> V0.4 inspects the 100 most recently updated public repositories. Counts labeled “in sample” do not represent every repository.</div>}
+            {snapshot.user.public_repos > total && <div className="sampling-note"><CircleDot size={15}/> V0.5 inspects the 100 most recently updated public repositories. Counts labeled “in sample” do not represent every repository.</div>}
           </section>
         </div>}
 
