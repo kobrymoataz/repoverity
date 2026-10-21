@@ -1,54 +1,32 @@
 # RepoVerity
 
-**Understand public GitHub work. Measure real growth. Find meaningful contributions.**
+**Public GitHub intelligence. Real growth. Better repositories.**
 
 [![Quality checks](https://github.com/kobrymoataz/repoverity/actions/workflows/ci.yml/badge.svg)](https://github.com/kobrymoataz/repoverity/actions/workflows/ci.yml)
-[![GitHub Pages](https://github.com/kobrymoataz/repoverity/actions/workflows/deploy.yml/badge.svg)](https://github.com/kobrymoataz/repoverity/actions/workflows/deploy.yml)
-![Release](https://img.shields.io/badge/version-0.5.0-83E0C3?style=flat-square)
+[![Deploy GitHub Pages](https://github.com/kobrymoataz/repoverity/actions/workflows/deploy.yml/badge.svg)](https://github.com/kobrymoataz/repoverity/actions/workflows/deploy.yml)
+![Release](https://img.shields.io/badge/release-v1.0.0-8FF0CF?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-7294A0?style=flat-square)
 
-**[Open live dashboard](https://kobrymoataz.github.io/repoverity/)** · [Report an issue](https://github.com/kobrymoataz/repoverity/issues) · [Contribute](CONTRIBUTING.md)
+[**Open the live dashboard**](https://kobrymoataz.github.io/repoverity/) · [GitHub Issues](https://github.com/kobrymoataz/repoverity/issues) · [Contribution guide](CONTRIBUTING.md) · [Privacy](docs/PRIVACY.md)
 
-RepoVerity is a free, open-source dashboard for public GitHub account intelligence and explainable repository improvements. Enter a username or profile URL to see transparent portfolio indicators, explore repositories, and optionally record *real observations* of follower and sampled-star growth over time. No account login or personal access token is required.
+RepoVerity is an MIT-licensed, open-source web dashboard for understanding public GitHub profiles, exploring repositories, finding real beginner-friendly issues, keeping an *optional* personal history of follower growth, and receiving explainable repository improvement suggestions.
 
-## Available in V0.5
+**No GitHub account sign-in, personal access token, automated followers, fake stars or manufactured contribution activity.** The live dashboard uses public GitHub REST API endpoints. V1.0 runs as a static site without a tracking server.
 
-### Profile and repository intelligence
+## Features
 
-- Look up GitHub users by username, `@handle`, or profile URL.
-- View GitHub-reported followers and number of public repositories.
-- See **sampled** stars, forks, and primary repository languages.
-- Inspect profile signals: descriptions, topics, licenses, and pushes in the last 90 days.
-- Search, filter, and sort recently updated public repositories.
-- Share the selected profile using the `?user=...` URL.
+| Workspace | What it offers | Important limit |
+| --- | --- | --- |
+| Profile insights | Followers, GitHub-reported public repository count, languages and metadata signals | Stars and forks cover **up to 100 recently updated owned public repositories** |
+| Growth analytics | Opt-in observations, goal tracking, time-aware SVG charts and CSV export | **No historical backfill or background monitoring**; observations appear when you visit |
+| Achievement Lab | Educational criteria and manual checklist for GitHub Achievements | Self-reported checklists do **not** verify or award GitHub badges |
+| Contribution finder | Read-only discovery of labeled, open, unassigned GitHub Issues | Anonymous search API limits apply |
+| Repository advisor | Explainable metadata recommendations and on-demand public file-presence checks | **Not an AI-generated security scan, code audit or certification** |
+| Privacy & portability | Export, inspect and import versioned local JSON backups; delete local records | Saved locally **per browser/device**; replacing an import needs confirmation |
 
-### Growth analytics (from V0.3)
+## Start locally
 
-- Opt-in tracking, **separate for each GitHub username in your browser**.
-- Store up to one observation per **UTC calendar day**; a newer fetch on the same day replaces that day's observation.
-- Compare followers and stars for the sampled repositories using **actual timestamps**, with 7D / 30D / All time filters.
-- See change from the first to last **measured** observation in the selected window. No backfilled or inferred values.
-- Choose a personal milestone, with **1,000 followers** as the initial default.
-- Refresh public API data, export the saved observations as CSV, pause tracking or delete the selected profile's local history.
-
-**Important:** Tracking begins only when you click **Start tracking**. An enabled profile gets a new observation when you visit and fetch it; this static GitHub Pages app does **not** run background jobs. Browser storage is device/profile-specific, and clearing browser data removes the timeline. The CSV export is your backup. Sharing a profile link does not share browser-local history.
-
-**Accuracy:** Account follower count and public repository count come from GitHub's user endpoint. Repository stars/forks are summed from **up to 100 most recently updated owned public repositories**, and the set of sampled repositories may change over time. **Do not interpret sampled-star deltas as the account's total star gains.** Indicators are not a security audit.
-
-## Repository advisor (new in V0.5)
-
-- Rank sampled public repositories by **four explainable metadata checks** (description, topics, GitHub-recognized license and recent push).
-- Review improvement recommendations prioritized by evidence and practical next steps.
-- Optionally inspect one selected public repository's **directory listings**, locating common README, contribution, security-policy, CI and Dependabot file names. **1 to 4 additional public API requests only when you click Inspect.**
-- Copy or download the selected repository's Markdown improvement plan.
-- Archived repositories and forks are excluded from the metadata ranking. Partial failed inspections never imply files are missing.
-- **Not a vulnerability scan, AI-generated security audit, compliance score or code-quality certification.** The application does not read source-file contents or detect security issues.
-
-Read [Repository advisor methodology and limits](docs/REPOSITORY_ADVISOR.md) before using these indicators for any decisions.
-
-## Run locally
-
-Prerequisites: Node.js **22.12+**, npm and Git.
+Requirements: Node.js **22.12+** (Node 24 recommended), npm and Git.
 
 ```bash
 git clone https://github.com/kobrymoataz/repoverity.git
@@ -57,60 +35,39 @@ npm ci
 npm run dev
 ```
 
-Open <http://127.0.0.1:5173/>. Run quality checks before proposing changes:
+Open <http://127.0.0.1:5173/>.
+
+## Quality checks and deployment
 
 ```bash
 npm run typecheck
 npm test
 npm run build
+npm run build:pages
 ```
 
-## Architecture
+`npm run build:pages` builds with the required `/repoverity/` base path **and** verifies that production HTML references the compiled JavaScript, stylesheets and real files. This catches a common cause of blank GitHub Pages sites. GitHub Actions runs the same checks before uploading `dist/`.
 
-- React 19 + TypeScript + Vite 8 + Tailwind CSS 4.
-- Public GitHub REST API (no tokens and no GitHub login).
-- In-memory public profile API cache (2 minutes); optional repository file listing cache (10 minutes).
-- Browser `localStorage` for growth observations and follower goals (`repoverity:growth:v1`) and a separate manual badge checklist (`repoverity:achievements:v1`).
-- Lightweight SVG charts without a charting service or extra runtime dependency.
-- GitHub Actions CI and GitHub Pages deployment on `main`.
+- GitHub Pages source: **GitHub Actions**, not "Deploy from a branch".
+- Website: <https://kobrymoataz.github.io/repoverity/>.
+- Read [deployment checks and release steps](docs/RELEASE_CHECKLIST.md).
 
-The GitHub unauthenticated API rate limit is typically **60 requests per hour per IP**; API errors and rate limits are displayed instead of inventing data. For retention, validation and portability details, read [Growth data and privacy](docs/GROWTH_DATA.md).
+## How the information works
 
-## Achievement lab (V0.4)
+- **GitHub API**: User and repository metadata come from public REST endpoints; the in-memory profile cache lasts two minutes. Unauthenticated requests are rate limited, typically to 60 requests/hour/IP. Errors and limits are shown rather than turned into fabricated results.
+- **Sampling**: The dashboard loads a maximum of 100 recently updated *owned* public repositories. Sampled stars or forks must not be interpreted as whole-account totals, and their changes may reflect a different sample on subsequent visits.
+- **Growth**: A chart point represents a real observation, at most one per UTC day per GitHub profile. Tracking is disabled until the visitor opts in. The static site does not perform background checks.
+- **Storage**: `localStorage` holds separate growth and manual-badge records. Only these two records are included in the opt-in JSON backup. Other storage keys, credentials and API tokens are not exported.
+- **Advisor**: File presence is checked on demand via public GitHub directory listings; finding a security policy or CI file is not proof of security or successful automation.
 
-- Seven community-documented, generally obtainable GitHub Achievements with practical next steps.
-- Two clearly marked historical badges that cannot be newly earned.
-- Local per-profile checklist: not started, working, or **self-reported earned**.
-- Link to the profile's real GitHub Achievements page to confirm earned badges.
-- Transparent sample-based Starstruck signal (most starred repository from up to 100 loaded repos).
-- **RepoVerity cannot award or reliably verify GitHub badges.** Checklist status is never portrayed as authoritative.
+Read [privacy and backups](docs/PRIVACY.md), [architecture](docs/ARCHITECTURE.md), [growth methodology](docs/GROWTH_DATA.md), [achievement criteria](docs/ACHIEVEMENTS.md), [issue finder documentation](docs/CONTRIBUTIONS.md) and [repository advisor methodology](docs/REPOSITORY_ADVISOR.md).
 
-See [ACHIEVEMENTS.md](docs/ACHIEVEMENTS.md) for accuracy limits and community sources.
+## Contribute
 
-## Contribution finder (V0.4)
+The project accepts reproducible bug reports, accessibility feedback, tests, documentation improvements and meaningful pull requests. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [the Code of Conduct](CODE_OF_CONDUCT.md), and our [security reporting policy](SECURITY.md). Please do not post exported tracking backups in public Issues.
 
-- On-demand searches for **open**, **unassigned**, labeled GitHub Issues.
-- Filter by repository language, `good first issue` / `help wanted`, and text search.
-- Read-only results with direct GitHub issue links and a fallback to GitHub search.
-- Anonymous GitHub Search API limits apply. No automated PRs, fake Issues, follow bots or stars.
+### Release history
 
-See [CONTRIBUTIONS.md](docs/CONTRIBUTIONS.md) for details and limitations.
+See [CHANGELOG.md](CHANGELOG.md) for version details and [V1.0 release notes](docs/V1_RELEASE_NOTES.md) for the stable release scope. A GitHub Release and tag can be created after CI and Pages deployment succeed.
 
-## Deployment
-
-GitHub Pages source must be **GitHub Actions**. The workflow builds with `PAGES_BASE=/repoverity/`, then deploys the production `dist/` folder. The published URL is <https://kobrymoataz.github.io/repoverity/>.
-
-## Roadmap
-
-- **V0.1**: Foundation and responsive UI.
-- **V0.2**: Public API, repository intelligence, README, tests and Pages.
-- **V0.3**: Honest local growth tracking, charts, milestones and CSV export.
-- **V0.4**: Educational achievement guide and legitimate contribution discovery.
-- **V0.5**: Practical repository advice and transparent file-presence signals. **Current release.**
-- **V1.0**: Stable release with refined security, accessibility, reliability and community support.
-
-## Community
-
-Issues, bug reports and constructive pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). RepoVerity does not generate follows, stars, fake commits or artificial GitHub engagement.
-
-**Maintained by [@kobrymoataz](https://github.com/kobrymoataz).** MIT-licensed under [LICENSE](LICENSE).
+**Maintained by [@kobrymoataz](https://github.com/kobrymoataz).** MIT License.

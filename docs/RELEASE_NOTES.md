@@ -1,3 +1,9 @@
+## V1.0.0 | Stable release (pending publication)
+
+See [V1 release notes](V1_RELEASE_NOTES.md), [privacy](PRIVACY.md) and [release checklist](RELEASE_CHECKLIST.md). Adds local data portability, accessibility polish, deferred workspaces and compiled GitHub Pages asset checks.
+
+---
+
 # RepoVerity V0.5 release notes
 
 ## Included

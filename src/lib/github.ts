@@ -67,11 +67,14 @@ async function getJson<T>(endpoint: string, signal?: AbortSignal): Promise<T> {
 export async function fetchGitHubSnapshot(usernameInput: string, signal?: AbortSignal): Promise<GitHubSnapshot> {
   const username = normalizeUsername(usernameInput)
   const user = await getJson<GitHubUser>(`/users/${encodeURIComponent(username)}`, signal)
-  // Only the 100 most recently updated owner repositories are analyzed in V0.1.
+  // Most recently updated owned public repositories, at most 100. No complete star total is implied.
   const repositories = await getJson<GitHubRepository[]>(
     `/users/${encodeURIComponent(user.login)}/repos?type=owner&sort=updated&direction=desc&per_page=${MAX_REPOS}`,
     signal,
   )
+  if (!user || typeof user.login !== 'string' || !Array.isArray(repositories)) {
+    throw new GithubApiError('unknown', 'GitHub returned an unexpected response. Please try again.')
+  }
   return { user, repositories, fetchedAt: Date.now() }
 }
 
@@ -86,6 +89,8 @@ export async function getCachedSnapshot(username: string, signal?: AbortSignal, 
     return existing
   }
   const snapshot = await fetchGitHubSnapshot(clean, signal)
+  cache.delete(key)
   cache.set(key, snapshot)
+  if (cache.size > 30) cache.delete(cache.keys().next().value!)
   return snapshot
 }

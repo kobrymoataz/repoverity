@@ -1,37 +1,35 @@
 # Contributing to RepoVerity
 
-Thanks for your interest in making developer tools more useful.
+We welcome reproducible bug fixes, tests, accessibility suggestions, documentation, and improvements that respect user privacy and provide truthful public data. No manufactured stars, followers, artificial activity or badge gaming.
 
-## Before contributing
+## Setup
 
-1. Check existing issues and avoid duplicate work.
-2. Open a focused issue for changes affecting product behavior or data accuracy.
-3. Keep pull requests small enough to review and describe how you tested them.
-
-## Local checks
+Requires Node.js 22.12+ (Node 24 recommended) and npm.
 
 ```bash
-npm install
-npm run typecheck
-npm test
-npm run build
+git clone https://github.com/kobrymoataz/repoverity.git
+cd repoverity
+npm ci
+npm run dev
 ```
 
-## Pull request checklist
+## Development process
 
-- [ ] The change solves a clear problem.
-- [ ] Any new statistics explain their data source and sampling limitations.
-- [ ] Public API failures, missing values and mobile layout are handled.
-- [ ] No secrets, access tokens or private information have been committed.
+1. Open a focused Issue or comment on an existing one before large changes.
+2. Create a branch from `main` such as `fix/issue-number-short-description`.
+3. Change only relevant files and add tests for logic changes.
+4. Run `npm run typecheck`, `npm test`, and `npm run build:pages`.
+5. Open a pull request with a summary, test evidence, and screenshots if UI behavior changes.
+6. Respond to review comments and avoid pushing secrets, tokens, personal data or local backups.
 
-Please do not automate follows, stars, repository spam or other manufactured engagement. RepoVerity exists to make public work easier to understand, not to game GitHub metrics.
+## Contribution standards
 
-## Code conventions
+- Prefer clear, explainable rules to unexplained scores.
+- Profile stars/forks are sample-based; never label them as account-wide totals.
+- Badge status is manually tracked; RepoVerity cannot grant or certify GitHub Achievements.
+- Only access public GitHub endpoints; do not add hidden telemetry or API token collection.
+- Keep keyboard navigation, mobile accessibility, and reduced motion behavior functional.
+- File hygiene checks must never be described as a vulnerability or security audit.
+- Maintain local JSON backup compatibility, or clearly version and migrate it.
 
-Use TypeScript for application logic; prefer simple components and accessible HTML. Prefer plain, explicit calculations to opaque scores. Keep dependency additions justified and documented.
-
-## Real contributions first
-
-The V0.4 Contribution finder lists open, unassigned GitHub issues. Check the upstream repository's guidelines and ask maintainers before claiming an issue. Do not submit spam PRs, manufacture issues, request fake reviews or use engagement bots for Achievements.
-
-Badge checklist states are explicitly **self-reported** and never presented as GitHub-verified.
+Respect the [Code of Conduct](CODE_OF_CONDUCT.md). For security reports, see [SECURITY.md](SECURITY.md); do not disclose sensitive vulnerabilities publicly.
