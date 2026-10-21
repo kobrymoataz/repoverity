@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.5.0] - Prepared for release
+
+- Added a focused evidence audit workbench inside the Repository Audit view.
+- Added README content inspection, public community profile checks and GitHub Actions workflow evidence.
+- Added optional root dependency manifest review for recognized languages.
+- Added observed, review, unknown and informational findings with direct source links.
+- Added bounded on-demand API requests, caching and Markdown/JSON exports.
+- Kept the prior metadata advisor and all V1.4 analytics and local storage unchanged.
+- Expanded deterministic tests and documented limits without claiming vulnerability detection.
+
 ## [1.4.0] - Prepared for release
 
 - Added Developer Analytics Pro with portfolio metrics and a transparent last-push distribution chart.
