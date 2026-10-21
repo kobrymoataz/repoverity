@@ -34,3 +34,7 @@ RepoVerity samples at most 100 recently updated public repositories per account.
 ## Deployment and reliability
 
 The build runs type checks, tests, text validation and a GitHub Pages asset-path check before uploading the compiled `dist` directory. Hash routes do not require server-side fallback configuration. The existing error boundary handles unexpected rendering failures. Avoid storing credentials in local storage or source code.
+
+## V1.3 Explorer pagination
+
+The Repositories workspace mounts `src/components/RepositoryExplorer.tsx`, supported by `src/hooks/useRepositoryPages.ts`, `src/lib/repositoryPages.ts`, and `src/lib/explorer.ts`. The initial GitHub snapshot remains page 1. Each additional page is user-triggered and merged by repository ID. The Explorer maintains its own loaded collection and never silently changes metrics, growth history or repository advisor results in other workspaces. Saved filters are browser-local under a separate versioned key. See [Explorer methodology](EXPLORER_V1_3.md).
