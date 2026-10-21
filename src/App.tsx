@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from 'react'
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Award, BookOpen,
   Check, ChevronDown, CircleDot, Clock3, Code2, Compass, Copy,
@@ -8,10 +8,16 @@ import {
 } from 'lucide-react'
 import { useGithubProfile } from './hooks/useGithubProfile'
 import { useGrowthHistory } from './hooks/useGrowthHistory'
-import { GrowthAnalytics } from './components/GrowthAnalytics'
-import { AchievementLab } from './components/AchievementLab'
-import { ContributionFinder } from './components/ContributionFinder'
-import { RepositoryAdvisor } from './components/RepositoryAdvisor'
+// Load optional workspaces on demand after the core profile shell is ready.
+const GrowthAnalytics = lazy(() => import('./components/GrowthAnalytics').then(m => ({ default: m.GrowthAnalytics })))
+const AchievementLab = lazy(() => import('./components/AchievementLab').then(m => ({ default: m.AchievementLab })))
+const ContributionFinder = lazy(() => import('./components/ContributionFinder').then(m => ({ default: m.ContributionFinder })))
+const RepositoryAdvisor = lazy(() => import('./components/RepositoryAdvisor').then(m => ({ default: m.RepositoryAdvisor })))
+const DataPortability = lazy(() => import('./components/DataPortability').then(m => ({ default: m.DataPortability })))
+
+function WorkspaceFallback({ label }: { label: string }) {
+  return <div className="v1-deferred" role="status" aria-live="polite"><span className="v1-deferred-dot"/> Preparing {label}...</div>
+}
 import { GithubApiError, normalizeUsername } from './lib/github'
 import {
   activeWithinDays, calculateInsights, compactNumber, filterRepositories,
@@ -48,6 +54,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
     { label: 'Repository advisor', href: '#advisor', icon: Sparkles },
     { label: 'Repository explorer', href: '#repositories', icon: Compass },
     { label: 'Portfolio signals', href: '#signals', icon: Activity },
+    { label: 'Privacy & backup', href: '#privacy', icon: ShieldCheck },
   ]
   return (
     <>
@@ -74,7 +81,7 @@ function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
             <p>Readable code, useful insights and a roadmap shaped by real developers.</p>
             <a href={REPOSITORY_URL} target="_blank" rel="noreferrer">Explore repository <ArrowUpRight size={14}/></a>
           </div>
-          <div className="sidebar-foot"><span><span className="mini-online"/> Open-source preview</span><span>v0.5.0</span></div>
+          <div className="sidebar-foot"><span><span className="mini-online"/> Stable open-source release</span><span>v1.0.0</span></div>
         </div>
       </aside>
     </>
@@ -166,7 +173,7 @@ function Roadmap() {
   const features = [
     { icon: FileCheck2, title: 'Achievement lab + issue finder', detail: 'Educational badge roadmap and real open-source discovery.', status: 'V0.4', done: true },
     { icon: Sparkles, title: 'Repository advisor', detail: 'Public metadata recommendations and on-demand file hygiene checks.', status: 'V0.5', done: true },
-    { icon: ShieldCheck, title: 'Stable public release', detail: 'Polish security, accessibility, documentation and community onboarding.', status: 'V1.0', done: false },
+    { icon: ShieldCheck, title: 'Stable public release', detail: 'Private local backups, accessible navigation, better performance and tested Pages deployment.', status: 'V1.0', done: true },
   ]
   return <section id="roadmap" className="roadmap-section">
     <div className="section-title-row"><div><div className="eyebrow">WHAT'S NEXT</div><h2>Built openly. Improved deliberately.</h2><p>We're starting with truthful public data, then adding useful capabilities one release at a time.</p></div><span className="planned-badge"><CircleDot size={13}/> ROADMAP</span></div>
@@ -229,21 +236,22 @@ function App() {
   const total = snapshot?.repositories.length ?? 0
 
   return <div className="app-shell" id="overview">
+    <a className="v1-skip-link" href="#main-content">Skip to main content</a>
     <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)}/>
     <div className="main-area">
       <header className="app-topbar">
         <button className="topbar-menu icon-button" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Menu size={22}/></button>
         <div className="breadcrumb"><span>WORKSPACE</span><ArrowRight size={13}/><strong>Developer intelligence</strong></div>
-        <div className="topbar-actions"><span className="beta-status"><span/> ALL SYSTEMS OPEN</span><a href={REPOSITORY_URL} target="_blank" rel="noreferrer" className="top-source-link"><Github size={16}/> Source code <ArrowUpRight size={14}/></a></div>
+        <div className="topbar-actions"><span className="beta-status"><span/> PUBLIC API / NO LOGIN</span><a href={REPOSITORY_URL} target="_blank" rel="noreferrer" className="top-source-link"><Github size={16}/> Source code <ArrowUpRight size={14}/></a></div>
       </header>
 
-      <main className="content">
+      <main className="content" id="main-content" tabIndex={-1}>
         <div className="hero">
           <div className="hero-grid" aria-hidden="true"/><div className="hero-orb hero-orb-one" aria-hidden="true"/><div className="hero-orb hero-orb-two" aria-hidden="true"/>
           <div className="hero-copy">
-            <div className="hero-kicker"><span className="pulsing-dot"/> INTRODUCING REPOVERITY <span> / </span> V0.5</div>
+            <div className="hero-kicker"><span className="pulsing-dot"/> REPOVERITY <span> / </span> STABLE V1.0</div>
             <h1>Make your GitHub<br/><span>presence count.</span></h1>
-            <p>Explore public repositories, track real growth, discover open-source issues and improve repository documentation with transparent advice. No manufactured engagement.</p>
+            <p>Explore real GitHub activity, build stronger public repositories, discover meaningful contributions, and keep your personal growth history portable. Transparent signals. No manufactured engagement.</p>
             <div className="hero-tags"><span><Check size={14}/> Public data only</span><span><Check size={14}/> No account required</span><span><Check size={14}/> No follower bots</span></div>
           </div>
           <div className="lookup-box">
@@ -258,7 +266,7 @@ function App() {
           </div>
         </div>
 
-        <div className="dashboard-status"><div className="eyebrow">LIVE PROFILE SNAPSHOT</div><div className="dashboard-status-right"><span className="status-text"><span className="tiny-green-dot"/>{status==='loading' ? 'FETCHING PUBLIC DATA' : status==='error' ? 'REQUEST FAILED' : 'DATA RECEIVED'}</span><button type="button" onClick={copyLink} className="share-link"><span>{copied ? 'Copied' : 'Share report'}</span>{copied ? <Check size={14}/> : <Copy size={14}/>}</button></div></div>
+        <div className="dashboard-status" aria-live="polite" aria-atomic="true"><div className="eyebrow">LIVE PROFILE SNAPSHOT</div><div className="dashboard-status-right"><span className="status-text"><span className="tiny-green-dot"/>{status==='loading' ? 'FETCHING PUBLIC DATA' : status==='error' ? 'REQUEST FAILED' : 'DATA RECEIVED'}</span><button type="button" onClick={copyLink} className="share-link"><span>{copied ? 'Copied' : 'Share report'}</span>{copied ? <Check size={14}/> : <Copy size={14}/>}</button></div></div>
 
         {status==='loading' && <LoadingContent/>}
         {status==='error' && <div className="error-panel" role="alert"><span className="error-icon"><ShieldCheck size={25}/></span><div><h2>We couldn't load this profile.</h2><p>{error}</p><p className="error-hint">RepoVerity reads GitHub's public API. Unauthenticated requests are limited and may temporarily be unavailable.</p><button className="secondary-button" type="button" onClick={retry}>Try again <ArrowRight size={16}/></button></div></div>}
@@ -270,6 +278,7 @@ function App() {
             <Metric title="STARS IN SAMPLE" value={compactNumber(insights.stars)} note={`From ${total} loaded repositories`} icon={Star}/>
             <Metric title="FORKS IN SAMPLE" value={compactNumber(insights.forks)} note={`From ${total} loaded repositories`} icon={GitFork}/>
           </div>
+          <Suspense fallback={<WorkspaceFallback label="growth analytics"/>}>
           <GrowthAnalytics
             username={snapshot.user.login}
             currentFollowers={snapshot.user.followers}
@@ -283,9 +292,16 @@ function App() {
             onRefresh={retry}
             onClear={growth.clearHistory}
           />
-          <AchievementLab username={snapshot.user.login} repositories={snapshot.repositories}/>
-          <ContributionFinder/>
-          <RepositoryAdvisor username={snapshot.user.login} repositories={snapshot.repositories}/>
+          </Suspense>
+          <Suspense fallback={<WorkspaceFallback label="achievement lab"/>}>
+            <AchievementLab username={snapshot.user.login} repositories={snapshot.repositories}/>
+          </Suspense>
+          <Suspense fallback={<WorkspaceFallback label="contribution finder"/>}>
+            <ContributionFinder/>
+          </Suspense>
+          <Suspense fallback={<WorkspaceFallback label="repository advisor"/>}>
+            <RepositoryAdvisor username={snapshot.user.login} repositories={snapshot.repositories}/>
+          </Suspense>
           <div className="insights-grid"><LanguagePanel languages={insights.languages}/><SignalPanel signals={insights.signals} total={total}/></div>
           <section className="repositories-section" id="repositories">
             <div className="section-title-row section-heading-repos"><div><div className="eyebrow">THE WORK BEHIND THE PROFILE</div><h2>Repository explorer</h2><p>Search, compare and open public repositories from this account.</p></div><a className="view-github-link" href={`${snapshot.user.html_url}?tab=repositories`} target="_blank" rel="noreferrer">View on GitHub <ArrowUpRight size={15}/></a></div>
@@ -293,10 +309,11 @@ function App() {
             <div className="repo-result-caption">SHOWING {Math.min(visibleCount, filteredRepositories.length)} OF {filteredRepositories.length} MATCHING REPOSITORIES</div>
             {filteredRepositories.length ? <div className="repo-grid">{filteredRepositories.slice(0,visibleCount).map(repo => <RepositoryItem key={repo.id} repo={repo}/>)}</div> : <div className="repo-empty"><Search size={23}/><h3>No repositories match.</h3><p>Try a different search or filter.</p><button type="button" onClick={()=>{setQuery('');setFilter('all')}}>Clear filters <ArrowRight size={15}/></button></div>}
             {visibleCount < filteredRepositories.length && <button type="button" className="load-more" onClick={()=>setVisibleCount(n=>n+6)}>Load more repositories <ArrowRight size={16}/></button>}
-            {snapshot.user.public_repos > total && <div className="sampling-note"><CircleDot size={15}/> V0.5 inspects the 100 most recently updated public repositories. Counts labeled “in sample” do not represent every repository.</div>}
+            {snapshot.user.public_repos > total && <div className="sampling-note"><CircleDot size={15}/> RepoVerity analyzes up to 100 recently updated public repositories. Counts labeled “in sample” do not represent every repository.</div>}
           </section>
         </div>}
 
+        <Suspense fallback={<WorkspaceFallback label="local backup tools"/>}><DataPortability/></Suspense>
         <Roadmap/>
         <footer className="site-footer"><span className="footer-brand"><span className="tiny-green-dot"/> REPOVERITY <span>© {new Date().getFullYear()}</span></span><span>Public data. Clear signals. No manufactured engagement.</span><a href={REPOSITORY_URL} target="_blank" rel="noreferrer">Crafted by @{OWNER} <ArrowUpRight size={13}/></a></footer>
       </main>
