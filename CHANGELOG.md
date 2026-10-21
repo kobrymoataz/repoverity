@@ -1,6 +1,12 @@
 # Changelog
 
-This project uses incremental release milestones. A version is published only after code is merged and deployment succeeds.
+## [1.1.0] - Planned release
+
+- Rebuilt the main interface as a nine-view developer workspace.
+- Introduced a restrained, responsive design system, a new visual identity and repository data tables.
+- Added direct workspace hash links and keyboard search shortcut.
+- Preserved the public GitHub API and existing local history formats.
+- Updated accessibility, documentation and release text checks.
 
 ## [1.0.0] - Pending publication
 

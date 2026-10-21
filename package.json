@@ -1,7 +1,7 @@
 {
   "name": "repoverity",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "description": "Open-source public GitHub analytics, local growth tracking, achievements, issue discovery and repository advice.",
   "scripts": {
@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "build:pages": "PAGES_BASE=/repoverity/ npm run build && npm run verify:pages",
-    "verify:pages": "node scripts/verify-pages.mjs dist /repoverity/"
+    "verify:pages": "node scripts/verify-pages.mjs dist /repoverity/",
+    "lint:text": "node scripts/check-no-emdash.mjs"
   },
   "engines": {
     "node": ">=22.12.0"

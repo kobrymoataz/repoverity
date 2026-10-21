@@ -1,32 +1,36 @@
-# Architecture and engineering boundaries
+# RepoVerity application architecture
 
-## Application stack
-- React 19, TypeScript, Vite 8, Tailwind CSS 4.
-- Static GitHub Pages deployment at `/repoverity/`.
-- Public GitHub REST API over HTTPS. No OAuth, token storage or proprietary API keys.
-- Local-only `localStorage` for optional growth observations and manual badge checklists.
-- SVG growth chart, with timestamps based on real observations.
+## Stack
 
-## Entry points
-- `src/App.tsx`: dashboard shell, public profile lookup, section-level deferred workspaces.
-- `src/lib/github.ts`: user and repository loading with short-lived capped in-memory cache.
-- `src/hooks/useGithubProfile.ts`: profile loading/cancellation/error state.
-- `src/lib/growth.ts`: observed points, goals, UTC dates, CSV export.
-- `src/lib/achievements.ts`: educational criteria and manual checklist model.
-- `src/lib/contributions.ts`: open-source issue discovery.
-- `src/lib/advisor.ts` and `src/lib/repositoryAudit.ts`: metadata advice and on-demand public file checks.
-- `src/lib/portability.ts`: bounded, versioned browser storage backup/restore.
-- `scripts/verify-pages.mjs`: compiled Pages asset verification.
+- React 19, TypeScript and Vite 8.
+- Tailwind CSS 4 and a dedicated product stylesheet.
+- Static GitHub Pages deployment under `/repoverity/`.
+- GitHub public REST API with no browser-held access tokens.
+- Browser local storage for optional growth observations and the personal achievement checklist.
 
-## Boundaries
-A sample of the 100 most recently updated owned public repositories is not a comprehensive account report. The app cannot infer historical follower count or past star gains. Achievement states are educational/self-reported, not GitHub verified. The repository advisor does not read private code or perform a vulnerability scan.
+## Interface organization
 
-## Storage migrations
-Versioned JSON backup is designed for records from V0.3+ / V0.4+. Invalid or newer backup formats are rejected instead of silently replacing local browser data. Update the import format and tests before adding new stored fields.
+The app uses hash routing to keep individual workspace views directly linkable on a static host. `src/lib/navigation.ts` owns the list of supported views and resolves unknown fragments to Overview. `src/App.tsx` renders the navigation shell, profile lookup, summary, repository table and overview components. Existing feature modules are lazy loaded per view.
 
-## Reliability
-- Each public profile request is abortable and exposes an error state.
-- Sections are loaded lazily after the primary shell becomes available.
-- Unexpected React rendering errors show a user-facing fallback instead of a silent blank page.
-- GitHub Pages build is tested for the correct project subpath and assets before deployment.
-- No fake traffic, stars, followers or automated code contributions.
+The supported workspaces are Overview, Repositories, Insights, Growth, Repository Advisor, Contributions, Achievements, Data & Privacy and About. Navigating between views does not create a new GitHub API request. Searching another profile updates the `user` URL parameter and returns to Overview.
+
+## Feature modules
+
+- `src/lib/github.ts` loads public account and repository metadata with an abortable request and a capped in-memory cache.
+- `src/hooks/useGithubProfile.ts` controls account loading, error handling and URL updates.
+- `src/lib/insights.ts` computes public metadata signals from the loaded sample.
+- `src/lib/growth.ts` and `src/hooks/useGrowthHistory.ts` handle observed UTC snapshots and goals.
+- `src/lib/achievements.ts` and `src/hooks/useAchievementTracker.ts` support manual achievement progress.
+- `src/lib/contributions.ts` powers public issue discovery.
+- `src/lib/advisor.ts` and `src/lib/repositoryAudit.ts` provide metadata guidance and read-only file-presence checks.
+- `src/lib/portability.ts` validates and restores versioned local data backups.
+- `scripts/verify-pages.mjs` validates compiled page asset references.
+- `scripts/check-no-emdash.mjs` enforces the requested text convention.
+
+## Data limits
+
+RepoVerity samples at most 100 recently updated public repositories per account. Stars and forks are sample totals. It cannot reconstruct history prior to the start of local tracking. Achievement state is manually set. Repository reviews do not assess source code vulnerabilities.
+
+## Deployment and reliability
+
+The build runs type checks, tests, text validation and a GitHub Pages asset-path check before uploading the compiled `dist` directory. Hash routes do not require server-side fallback configuration. The existing error boundary handles unexpected rendering failures. Avoid storing credentials in local storage or source code.
