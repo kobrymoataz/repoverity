@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security policy
+    url: https://github.com/kobrymoataz/repoverity/security/policy
+    about: Report vulnerabilities privately; do not publish sensitive details in an issue.

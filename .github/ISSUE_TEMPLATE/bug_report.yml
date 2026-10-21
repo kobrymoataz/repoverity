@@ -1,0 +1,29 @@
+name: Bug report
+description: Report a reproducible problem with RepoVerity
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Do not upload local backup JSON files, credentials or other private data."
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Explain how to reproduce the issue, including the browser and the exact feature.
+      placeholder: "1. Open dashboard... 2. Click... 3. Observe..."
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and safe logs
+      description: Redact private details or tokens before sharing.
+    validations:
+      required: true

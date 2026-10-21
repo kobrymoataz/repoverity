@@ -1,0 +1,19 @@
+name: Feature request
+description: Suggest a useful improvement to RepoVerity
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the user need and existing workaround, if any.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed approach
+      description: Keep public API limits and local-first privacy in mind.
+    validations:
+      required: true
