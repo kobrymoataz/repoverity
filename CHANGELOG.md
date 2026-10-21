@@ -1,6 +1,21 @@
 # Changelog
 
-This project uses incremental release milestones. A version is published only after code is merged and deployment succeeds.
+## [1.2.0] - Planned release
+
+- Added Motion for React transitions for the developer workspace and navigation.
+- Introduced GSAP scoped Overview reveal for actual loaded data.
+- Added searchable Quick switch with Command K and Control K shortcuts.
+- Animated time-aware growth chart paths without changing recorded observations.
+- Added a motion preference that respects the user's operating system settings.
+- Added motion policy tests and release documentation.
+
+## [1.1.0] - Planned release
+
+- Rebuilt the main interface as a nine-view developer workspace.
+- Introduced a restrained, responsive design system, a new visual identity and repository data tables.
+- Added direct workspace hash links and keyboard search shortcut.
+- Preserved the public GitHub API and existing local history formats.
+- Updated accessibility, documentation and release text checks.
 
 ## [1.0.0] - Pending publication
 

@@ -1,9 +1,9 @@
 {
   "name": "repoverity",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.2.0",
   "type": "module",
-  "description": "Open-source public GitHub analytics, local growth tracking, achievements, issue discovery and repository advice.",
+  "description": "Public GitHub developer workspace with accessible navigation, repository analysis and optional motion.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
@@ -12,13 +12,16 @@
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "build:pages": "PAGES_BASE=/repoverity/ npm run build && npm run verify:pages",
-    "verify:pages": "node scripts/verify-pages.mjs dist /repoverity/"
+    "verify:pages": "node scripts/verify-pages.mjs dist /repoverity/",
+    "lint:text": "node scripts/check-no-emdash.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
   },
   "dependencies": {
+    "gsap": "3.13.0",
     "lucide-react": "^0.548.0",
+    "motion": "12.23.24",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
