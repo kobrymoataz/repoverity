@@ -2,8 +2,8 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, t
 import { AnimatePresence, motion, MotionConfig } from 'motion/react'
 import {
   Activity, AlertCircle, ArrowRight, ArrowUpRight, Award, BookOpen, Check,
-  ChevronDown, Clock3, Code2, Compass, Copy, Database, ExternalLink,
-  FileCheck2, Filter, GitBranch, GitFork, Github, Globe2, LayoutGrid,
+  Clock3, Code2, Compass, Copy, Database, ExternalLink,
+  FileCheck2, GitBranch, GitFork, Github, Globe2, LayoutGrid,
   MapPin, Menu, RefreshCw, Search, ShieldCheck, SlidersHorizontal, Star, TrendingUp,
   Users, X, type LucideIcon,
 } from 'lucide-react'
@@ -15,12 +15,12 @@ import { CommandPalette } from './components/CommandPalette'
 import { MOTION_TIMING } from './lib/motionPreferences'
 import { GithubApiError, normalizeUsername } from './lib/github'
 import {
-  calculateInsights, compactNumber, filterRepositories,
-  shortDate, type RepositoryFilter, type RepositorySort,
+  calculateInsights, compactNumber, shortDate,
 } from './lib/insights'
 import { workspaceFromHash, workspaceHref, type WorkspaceId } from './lib/navigation'
 import type { GitHubRepository, GitHubSnapshot } from './types/github'
 
+const RepositoryExplorer = lazy(() => import('./components/RepositoryExplorer').then(m => ({ default: m.RepositoryExplorer })))
 const GrowthAnalytics = lazy(() => import('./components/GrowthAnalytics').then(m => ({ default: m.GrowthAnalytics })))
 const AchievementLab = lazy(() => import('./components/AchievementLab').then(m => ({ default: m.AchievementLab })))
 const ContributionFinder = lazy(() => import('./components/ContributionFinder').then(m => ({ default: m.ContributionFinder })))
@@ -50,7 +50,7 @@ const navigation: { label: string; items: NavItem[] }[] = [
 
 const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; category: string }> = {
   overview: { title: 'Overview', subtitle: 'Public GitHub data, organized for a closer look.', category: 'WORKSPACE' },
-  repositories: { title: 'Repositories', subtitle: 'Find, filter and inspect projects in the public sample.', category: 'EXPLORE' },
+  repositories: { title: 'Repositories', subtitle: 'Explore public repositories with pagination, comparison and saved views.', category: 'EXPLORE' },
   analytics: { title: 'Profile insights', subtitle: 'Language distribution, repository activity and metadata coverage.', category: 'ANALYZE' },
   growth: { title: 'Growth history', subtitle: 'Follow changes in recorded observations, not estimated history.', category: 'TRACK' },
   advisor: { title: 'Repository advisor', subtitle: 'Review public metadata and check repository files on demand.', category: 'IMPROVE' },
@@ -63,7 +63,7 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
 function Brand() {
   return <a className="rv-brand" href={workspaceHref('overview')} aria-label="RepoVerity home">
     <span className="rv-brand-icon"><GitBranch size={19} strokeWidth={2.15}/></span>
-    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.2</span></span>
+    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.3</span></span>
   </a>
 }
 
@@ -226,14 +226,9 @@ function App() {
   const [draftUsername, setDraftUsername] = useState(username)
   const [validationMessage, setValidationMessage] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
-  const [query, setQuery] = useState('')
-  const [filter, setFilter] = useState<RepositoryFilter>('all')
-  const [sort, setSort] = useState<RepositorySort>('stars')
-  const [visibleCount, setVisibleCount] = useState(12)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   const insights = useMemo(() => snapshot ? calculateInsights(snapshot.repositories) : null, [snapshot])
-  const filteredRepositories = useMemo(() => snapshot ? filterRepositories(snapshot.repositories, query, filter, sort) : [], [snapshot, query, filter, sort])
 
   useEffect(() => {
     function syncView() {
@@ -243,7 +238,6 @@ function App() {
     window.addEventListener('hashchange', syncView)
     return () => window.removeEventListener('hashchange', syncView)
   }, [])
-  useEffect(() => {setVisibleCount(12)}, [query, filter, sort, snapshot])
   useEffect(() => {
     function shortcuts(event: KeyboardEvent) {
       const element = event.target as HTMLElement | null
@@ -268,8 +262,6 @@ function App() {
       const clean = normalizeUsername(raw)
       setDraftUsername(clean)
       setValidationMessage(null)
-      setQuery('')
-      setFilter('all')
       analyze(clean)
       if (active !== 'overview') window.location.hash = workspaceHref('overview')
     } catch (reason) {
@@ -341,18 +333,9 @@ function App() {
         </OverviewReveal>}
 
         {active === 'repositories' && isLoaded && <div className="rv-view">
-          <div className="rv-view-summary"><span><BookOpen size={17}/>{snapshot.repositories.length} loaded repositories</span><a href={`${snapshot.user.html_url}?tab=repositories`} target="_blank" rel="noopener noreferrer">Open on GitHub <ArrowUpRight size={15}/></a></div>
-          <div className="rv-repo-toolbar"><div className="rv-filter-tabs" role="group" aria-label="Repository status filter">
-            {([['all','All'],['starred','With stars'],['active','Active recently']] as const).map(([value,label])=><motion.button type="button" key={value} aria-pressed={filter===value} className={filter===value?'rv-filter-selected':''} onClick={()=>setFilter(value)}
-              whileTap={animation.reduceMotion ? undefined : { scale: 0.975 }}>
-              {filter === value && <motion.span layoutId="rv-active-repo-filter" className="rv-filter-motion-indicator" aria-hidden="true"
-                transition={{ type: 'spring', stiffness: 500, damping: 42 }}/>}<span>{label}</span>
-            </motion.button>)}
-          </div><div className="rv-repo-controls"><label className="rv-small-search"><Search size={16}/><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Find a repository" aria-label="Search repository list"/></label>
-          <label className="rv-select"><Filter size={15}/><select value={sort} onChange={event=>setSort(event.target.value as RepositorySort)} aria-label="Sort repositories"><option value="stars">Most stars</option><option value="recent">Recently pushed</option><option value="forks">Most forks</option></select><ChevronDown size={14}/></label></div></div>
-          <section className="rv-table-panel"><div className="rv-table-panel-heading"><strong>Repository index</strong><span>{filteredRepositories.length} matching results</span></div><RepositoryTable repositories={filteredRepositories.slice(0,visibleCount)}/>
-          {visibleCount<filteredRepositories.length && <div className="rv-table-actions"><button type="button" className="rv-outline-button" onClick={()=>setVisibleCount(count=>count+12)}>Show more repositories <ArrowRight size={15}/></button></div>}</section>
-          {snapshot.user.public_repos>snapshot.repositories.length && <div className="rv-footnote"><AlertCircle size={16}/>GitHub's public repository count exceeds the loaded sample. Detailed pagination is planned for a later release.</div>}
+          <Suspense fallback={<AsyncFallback title="Repository explorer"/>}>
+            <RepositoryExplorer key={`${snapshot.user.login}-${snapshot.fetchedAt}`} snapshot={snapshot} reducedMotion={animation.reduceMotion}/>
+          </Suspense>
         </div>}
 
         {active === 'analytics' && isLoaded && <div className="rv-view">
@@ -374,7 +357,7 @@ function App() {
         {active === 'about' && <div className="rv-view"><AboutView/></div>}
 
         </motion.div></AnimatePresence>
-        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.2</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
+        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.3</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
       </main>
     </div>
   </div></MotionConfig>
