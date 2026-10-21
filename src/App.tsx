@@ -25,7 +25,7 @@ const DeveloperAnalytics = lazy(() => import('./components/DeveloperAnalytics').
 const GrowthAnalytics = lazy(() => import('./components/GrowthAnalytics').then(m => ({ default: m.GrowthAnalytics })))
 const AchievementLab = lazy(() => import('./components/AchievementLab').then(m => ({ default: m.AchievementLab })))
 const ContributionFinder = lazy(() => import('./components/ContributionFinder').then(m => ({ default: m.ContributionFinder })))
-const RepositoryAdvisor = lazy(() => import('./components/RepositoryAdvisor').then(m => ({ default: m.RepositoryAdvisor })))
+const RepositoryAuditPro = lazy(() => import('./components/RepositoryAuditPro').then(m => ({ default: m.RepositoryAuditPro })))
 const DataPortability = lazy(() => import('./components/DataPortability').then(m => ({ default: m.DataPortability })))
 
 const REPOSITORY_URL = 'https://github.com/kobrymoataz/repoverity'
@@ -39,7 +39,7 @@ const navigation: { label: string; items: NavItem[] }[] = [
     { id: 'growth', label: 'Growth history', icon: TrendingUp },
   ] },
   { label: 'DEVELOPER TOOLS', items: [
-    { id: 'advisor', label: 'Repository advisor', icon: FileCheck2 },
+    { id: 'advisor', label: 'Repository audit', icon: FileCheck2 },
     { id: 'contributions', label: 'Find contributions', icon: Compass },
     { id: 'achievements', label: 'Achievements', icon: Award },
   ] },
@@ -54,7 +54,7 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
   repositories: { title: 'Repositories', subtitle: 'Explore public repositories with pagination, comparison and saved views.', category: 'EXPLORE' },
   analytics: { title: 'Analytics Pro', subtitle: 'Compare profiles, explore public activity and understand repository signals.', category: 'ANALYZE' },
   growth: { title: 'Growth history', subtitle: 'Follow changes in recorded observations, not estimated history.', category: 'TRACK' },
-  advisor: { title: 'Repository advisor', subtitle: 'Review public metadata and check repository files on demand.', category: 'IMPROVE' },
+  advisor: { title: 'Repository audit', subtitle: 'Inspect public evidence, review maintainability signals and plan improvements.', category: 'IMPROVE' },
   contributions: { title: 'Find contributions', subtitle: 'Discover open issues that welcome contributors.', category: 'CONTRIBUTE' },
   achievements: { title: 'Achievements', subtitle: 'Track GitHub achievement criteria and your own progress.', category: 'LEARN' },
   privacy: { title: 'Data & privacy', subtitle: 'Export, restore and manage records stored on this device.', category: 'CONTROL' },
@@ -64,7 +64,7 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
 function Brand() {
   return <a className="rv-brand" href={workspaceHref('overview')} aria-label="RepoVerity home">
     <span className="rv-brand-icon"><GitBranch size={19} strokeWidth={2.15}/></span>
-    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.4</span></span>
+    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.5</span></span>
   </a>
 }
 
@@ -350,13 +350,13 @@ function App() {
         </Suspense></div>}
 
         {active === 'achievements' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Achievements"/>}><AchievementLab username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}
-        {active === 'advisor' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Repository advisor"/>}><RepositoryAdvisor username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}
+        {active === 'advisor' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Repository audit"/>}><RepositoryAuditPro key={`${snapshot.user.id}-${snapshot.fetchedAt}`} username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}
         {active === 'contributions' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Contribution finder"/>}><ContributionFinder/></Suspense></div>}
         {active === 'privacy' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Data management"/>}><DataPortability/></Suspense></div>}
         {active === 'about' && <div className="rv-view"><AboutView/></div>}
 
         </motion.div></AnimatePresence>
-        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.4</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
+        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.5</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
       </main>
     </div>
   </div></MotionConfig>

@@ -42,3 +42,13 @@ The Repositories workspace mounts `src/components/RepositoryExplorer.tsx`, suppo
 ## V1.4 Developer Analytics Pro
 
 `src/components/DeveloperAnalytics.tsx` hosts the portfolio, compare and activity tabs inside the existing Analytics workspace. `src/lib/developerAnalytics.ts` contains deterministic sampling calculations, UTC bucket logic, safe CSV output and release-interval summaries. `src/lib/developerActivityApi.ts` provides four independent, user-triggered public REST requests and five-minute bounded in-memory caching. It validates repository paths and public links, supports abort signals, and preserves partial failures rather than inventing zero values. Profile comparison uses `getCachedSnapshot` and the existing GitHub API client. See [Analytics methodology](ANALYTICS_V1_4.md).
+
+
+## V1.5 public evidence review
+
+- `src/lib/auditProApi.ts` loads at most five independent public GitHub API endpoints after an explicit click. Each section has its own missing or unavailable state.
+- `src/lib/auditPro.ts` converts bounded observations into evidence-backed findings and Markdown reports. It never produces a security score.
+- `src/components/RepositoryAuditPro.tsx` provides a dedicated Evidence Audit workspace tab and preserves the existing metadata advisor.
+- README and one recognized root manifest are decoded from GitHub Contents base64 payloads using bounded UTF-8 conversion. No arbitrary source files are scanned.
+- Workflow counts and up to ten recent runs are samples across GitHub Actions, not a CI health certification.
+- All data remains in temporary browser memory, with an eight-minute capped cache; reports are exported only by user request. No new stored data or authentication tokens.
