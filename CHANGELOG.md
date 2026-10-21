@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0] - Planned release
+
+- Added Motion for React transitions for the developer workspace and navigation.
+- Introduced GSAP scoped Overview reveal for actual loaded data.
+- Added searchable Quick switch with Command K and Control K shortcuts.
+- Animated time-aware growth chart paths without changing recorded observations.
+- Added a motion preference that respects the user's operating system settings.
+- Added motion policy tests and release documentation.
+
 ## [1.1.0] - Planned release
 
 - Rebuilt the main interface as a nine-view developer workspace.

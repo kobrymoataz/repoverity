@@ -8,7 +8,7 @@
 
 [Live application](https://kobrymoataz.github.io/repoverity/) | [Source](https://github.com/kobrymoataz/repoverity) | [Issues](https://github.com/kobrymoataz/repoverity/issues) | [Contributing](CONTRIBUTING.md)
 
-RepoVerity turns public GitHub metadata into a structured, read-only developer workspace. Version 1.1 replaces the single long dashboard with dedicated views, compact data tables and a neutral design system. It remains a static application that does not require signing in to GitHub.
+RepoVerity turns public GitHub metadata into a structured, read-only developer workspace. V1.1 replaced the long dashboard with focused workspaces. V1.2 adds restrained motion and a keyboard-first quick switch. It remains a static application that does not require signing in to GitHub.
 
 ## Workspaces
 
@@ -56,11 +56,11 @@ npm run build:pages
 
 The Pages build verifies that output paths use `/repoverity/` and point to compiled files. GitHub Pages must use **GitHub Actions** as the source. The hosted app is available at [kobrymoataz.github.io/repoverity](https://kobrymoataz.github.io/repoverity/).
 
-## Design and navigation
+## Design, motion and navigation
 
-V1.1 introduces separate hash-routed workspaces, accessible navigation, a new sidebar, responsive repository tables and consistent typography and spacing. Bookmark a view using a URL such as `#/repositories` or `#/growth`, and share the account context using `?user=USERNAME`. Press `/` outside an input to focus the account search. Saved data remains compatible with V1.0.
+V1.1 introduced hash-routed workspaces and a neutral design system. V1.2 adds Motion for React and GSAP for purposeful transitions and charts, with no looping visual decoration. Press Command K or Control K to open the searchable Quick switch. Use the top-bar Motion control to reduce animations. Operating system reduced-motion preferences are always respected. Bookmark a view using a URL such as `#/repositories` or `#/growth`, and share the account context using `?user=USERNAME`. Press `/` outside an input to focus the account search. Saved data remains compatible with V1.0.
 
-See [design system](docs/DESIGN_SYSTEM.md), [architecture](docs/ARCHITECTURE.md), [privacy](docs/PRIVACY.md), [release notes](docs/V1_1_RELEASE_NOTES.md) and [changelog](CHANGELOG.md).
+See [motion policy](docs/MOTION_SYSTEM.md), [design system](docs/DESIGN_SYSTEM.md), [architecture](docs/ARCHITECTURE.md), [privacy](docs/PRIVACY.md), [V1.2 release notes](docs/V1_2_RELEASE_NOTES.md) and [changelog](CHANGELOG.md).
 
 ## Contribute
 
