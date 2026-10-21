@@ -8,7 +8,7 @@
 
 [Live application](https://kobrymoataz.github.io/repoverity/) | [Source](https://github.com/kobrymoataz/repoverity) | [Issues](https://github.com/kobrymoataz/repoverity/issues) | [Contributing](CONTRIBUTING.md)
 
-RepoVerity turns public GitHub metadata into a structured, read-only developer workspace. V1.1 replaced the long dashboard with focused workspaces. V1.2 added restrained motion and a keyboard-first quick switch. V1.3 adds Repository Explorer Pro with on-demand pagination, comparisons and saved views. It remains a static application that does not require signing in to GitHub.
+RepoVerity turns public GitHub metadata into a structured, read-only developer workspace. V1.1 replaced the long dashboard with focused workspaces. V1.2 added restrained motion and a keyboard-first quick switch. V1.3 added Repository Explorer Pro with on-demand pagination, comparisons and saved views. V1.4 adds evidence-based developer analytics, public profile comparisons and optional repository activity inspection. It remains a static application that does not require signing in to GitHub.
 
 ## Workspaces
 
@@ -16,7 +16,7 @@ RepoVerity turns public GitHub metadata into a structured, read-only developer w
 | --- | --- |
 | Overview | Public account summary, sample statistics, metadata coverage and recent repositories |
 | Repositories | On-demand paginated explorer with language/topic filters, table/card views, comparisons, saved views and CSV export |
-| Insights | Language and metadata analysis with documented sampling limitations |
+| Analytics Pro | Latest-push distribution, portfolio sampling, second-profile comparisons and on-demand contributor, release, issue and PR views |
 | Growth history | Optional daily observations stored in this browser, goals and CSV export |
 | Repository advisor | Metadata recommendations and optional public file-presence inspection |
 | Find contributions | Open and unassigned issues labeled by maintainers |
@@ -26,7 +26,8 @@ RepoVerity turns public GitHub metadata into a structured, read-only developer w
 
 ### Important limits
 
-- Up to 100 recently updated owned public repositories are initially loaded per account. The Explorer can request further pages on demand. Overview, Insights, Growth and Advisor still use the first-page sample, so their numbers are not full-account totals.
+- Developer Analytics Pro inspects the initial sample and never claims to reconstruct commit histories or entire lifetimes. Activity requests for contributors, releases, issues and PRs are optional, bounded and rate-limited.
+- Up to 100 recently updated owned public repositories are initially loaded per account. The Explorer can request further pages on demand. Overview, Analytics Pro, Growth and Advisor still use the first-page sample, so their numbers are not full-account totals.
 - The static application records growth only when tracking is enabled and an account is viewed. It cannot retrieve missing historical snapshots or run background checks.
 - GitHub achievement states are self-reported, not verified or awarded by RepoVerity.
 - The repository advisor reviews simple public metadata and file names. It does not perform a vulnerability scan or security certification.
@@ -62,7 +63,7 @@ The Pages build verifies that output paths use `/repoverity/` and point to compi
 
 V1.1 introduced hash-routed workspaces and a neutral design system. V1.2 adds Motion for React and GSAP for purposeful transitions and charts, with no looping visual decoration. Press Command K or Control K to open the searchable Quick switch. Use the top-bar Motion control to reduce animations. Operating system reduced-motion preferences are always respected. Bookmark a view using a URL such as `#/repositories` or `#/growth`, and share the account context using `?user=USERNAME`. Press `/` outside an input to focus the account search. Saved data remains compatible with V1.0.
 
-See [Explorer methodology](docs/EXPLORER_V1_3.md), [V1.3 release notes](docs/V1_3_RELEASE_NOTES.md), [motion policy](docs/MOTION_SYSTEM.md), [design system](docs/DESIGN_SYSTEM.md), [architecture](docs/ARCHITECTURE.md), [privacy](docs/PRIVACY.md), [V1.2 release notes](docs/V1_2_RELEASE_NOTES.md) and [changelog](CHANGELOG.md).
+See [Analytics methodology](docs/ANALYTICS_V1_4.md), [V1.4 release notes](docs/V1_4_RELEASE_NOTES.md), [Explorer methodology](docs/EXPLORER_V1_3.md), [V1.3 release notes](docs/V1_3_RELEASE_NOTES.md), [motion policy](docs/MOTION_SYSTEM.md), [design system](docs/DESIGN_SYSTEM.md), [architecture](docs/ARCHITECTURE.md), [privacy](docs/PRIVACY.md), [V1.2 release notes](docs/V1_2_RELEASE_NOTES.md) and [changelog](CHANGELOG.md).
 
 ## Contribute
 
