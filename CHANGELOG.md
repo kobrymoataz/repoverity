@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0] - Prepared for release
+
+- Added Developer Analytics Pro with portfolio metrics and a transparent last-push distribution chart.
+- Added on-demand second-profile comparisons and repository contributor, release, issue and PR activity sampling.
+- Added explicit per-endpoint failures, bounded in-memory caching, safe CSV exports and mobile layouts.
+- Preserved V1.3 Explorer, V1.2 motion, and existing browser-local data formats.
+- Documented measurement scope and the difference between unavailable data and zero results.
+
 ## [1.3.0] - Prepared for release
 
 - Added manual GitHub pagination beyond the initial 100-repository sample.

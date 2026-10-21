@@ -12,7 +12,7 @@
 
 The app uses hash routing to keep individual workspace views directly linkable on a static host. `src/lib/navigation.ts` owns the list of supported views and resolves unknown fragments to Overview. `src/App.tsx` renders the navigation shell, profile lookup, summary, repository table and overview components. Existing feature modules are lazy loaded per view.
 
-The supported workspaces are Overview, Repositories, Insights, Growth, Repository Advisor, Contributions, Achievements, Data & Privacy and About. Navigating between views does not create a new GitHub API request. Searching another profile updates the `user` URL parameter and returns to Overview.
+The supported workspaces are Overview, Repositories, Analytics Pro, Growth, Repository Advisor, Contributions, Achievements, Data & Privacy and About. Navigating between views does not create a new GitHub API request. Searching another profile updates the `user` URL parameter and returns to Overview.
 
 ## Feature modules
 
@@ -38,3 +38,7 @@ The build runs type checks, tests, text validation and a GitHub Pages asset-path
 ## V1.3 Explorer pagination
 
 The Repositories workspace mounts `src/components/RepositoryExplorer.tsx`, supported by `src/hooks/useRepositoryPages.ts`, `src/lib/repositoryPages.ts`, and `src/lib/explorer.ts`. The initial GitHub snapshot remains page 1. Each additional page is user-triggered and merged by repository ID. The Explorer maintains its own loaded collection and never silently changes metrics, growth history or repository advisor results in other workspaces. Saved filters are browser-local under a separate versioned key. See [Explorer methodology](EXPLORER_V1_3.md).
+
+## V1.4 Developer Analytics Pro
+
+`src/components/DeveloperAnalytics.tsx` hosts the portfolio, compare and activity tabs inside the existing Analytics workspace. `src/lib/developerAnalytics.ts` contains deterministic sampling calculations, UTC bucket logic, safe CSV output and release-interval summaries. `src/lib/developerActivityApi.ts` provides four independent, user-triggered public REST requests and five-minute bounded in-memory caching. It validates repository paths and public links, supports abort signals, and preserves partial failures rather than inventing zero values. Profile comparison uses `getCachedSnapshot` and the existing GitHub API client. See [Analytics methodology](ANALYTICS_V1_4.md).
