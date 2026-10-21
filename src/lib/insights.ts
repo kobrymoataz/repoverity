@@ -88,7 +88,7 @@ export function filterRepositories(
 }
 
 export function compactNumber(value: number): string {
-  if (!Number.isFinite(value)) return '—'
+  if (!Number.isFinite(value)) return 'N/A'
   return new Intl.NumberFormat('en', { notation: 'compact', maximumFractionDigits: 1 }).format(value)
 }
 

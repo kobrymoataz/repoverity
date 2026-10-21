@@ -43,18 +43,18 @@ function GrowthChart({ points, metric }: { points: GrowthPoint[]; metric: Growth
   return <div className="growth-chart-wrap">
     <svg viewBox={`0 0 ${width} ${height}`} className="growth-chart" role="img" aria-label={`Observed ${caption} chart: ${formatDate(points[0].at)} to ${formatDate(points[points.length-1].at)}, ${points.length} daily observations`}>
       <title>Measured {caption} from actual GitHub API snapshots</title>
-      <defs><linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#75e8c2" stopOpacity=".22"/><stop offset="100%" stopColor="#75e8c2" stopOpacity="0"/></linearGradient></defs>
+      <defs><linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#8da9d4" stopOpacity=".22"/><stop offset="100%" stopColor="#8da9d4" stopOpacity="0"/></linearGradient></defs>
       {ticks.map((tick, i) => {
         const y = pad.top + tick * drawHeight
         const label = ceil - tick * range
         return <g key={i}>
-          <line x1={pad.left} y1={y} x2={width - pad.right} y2={y} stroke="#314350" strokeDasharray="3 7" strokeOpacity={.8}/>
+          <line x1={pad.left} y1={y} x2={width - pad.right} y2={y} stroke="#374353" strokeDasharray="3 7" strokeOpacity={.8}/>
           <text x={pad.left-13} y={y+4} textAnchor="end" className="growth-axis-label">{compactNumber(Math.round(label))}</text>
         </g>
       })}
       <path d={area} fill={`url(#${gradientId})`}/>
-      <path d={line} fill="none" stroke="#87e9c9" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
-      {coords.length <= 35 && coords.map(({ x, y, point }) => <circle key={point.at} cx={x} cy={y} r="4.5" stroke="#10272d" strokeWidth="2.5" fill="#96f4d3"><title>{`${formatDate(point.at)}: ${point[metric].toLocaleString('en')} ${caption}`}</title></circle>)}
+      <path d={line} fill="none" stroke="#a7bddd" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"/>
+      {coords.length <= 35 && coords.map(({ x, y, point }) => <circle key={point.at} cx={x} cy={y} r="4.5" stroke="#111820" strokeWidth="2.5" fill="#c3d3e9"><title>{`${formatDate(point.at)}: ${point[metric].toLocaleString('en')} ${caption}`}</title></circle>)}
       <text x={pad.left} y={height-10} className="growth-axis-label">{formatDate(points[0].at)}</text>
       <text x={width-pad.right} y={height-10} textAnchor="end" className="growth-axis-label">{formatDate(points[points.length-1].at)}</text>
     </svg>

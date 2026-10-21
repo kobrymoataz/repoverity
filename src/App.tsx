@@ -1,321 +1,336 @@
-import { lazy, Suspense, useEffect, useMemo, useState, type FormEvent } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode, type RefObject } from 'react'
 import {
-  Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Award, BookOpen,
-  Check, ChevronDown, CircleDot, Clock3, Code2, Compass, Copy,
-  ExternalLink, FileCheck2, Filter, GitFork, Github, Globe2, Layers3,
-  GitPullRequest, MapPin, Menu, Search, ShieldCheck, Sparkles, Star, TrendingUp, Users,
-  X, Zap, type LucideIcon,
+  Activity, AlertCircle, ArrowRight, ArrowUpRight, Award, BookOpen, Check,
+  ChevronDown, Clock3, Code2, Compass, Copy, Database, ExternalLink,
+  FileCheck2, Filter, GitBranch, GitFork, Github, Globe2, LayoutGrid,
+  MapPin, Menu, RefreshCw, Search, ShieldCheck, Star, TrendingUp,
+  Users, X, type LucideIcon,
 } from 'lucide-react'
 import { useGithubProfile } from './hooks/useGithubProfile'
 import { useGrowthHistory } from './hooks/useGrowthHistory'
-// Load optional workspaces on demand after the core profile shell is ready.
+import { GithubApiError, normalizeUsername } from './lib/github'
+import {
+  calculateInsights, compactNumber, filterRepositories,
+  shortDate, type RepositoryFilter, type RepositorySort,
+} from './lib/insights'
+import { workspaceFromHash, workspaceHref, type WorkspaceId } from './lib/navigation'
+import type { GitHubRepository, GitHubSnapshot } from './types/github'
+
 const GrowthAnalytics = lazy(() => import('./components/GrowthAnalytics').then(m => ({ default: m.GrowthAnalytics })))
 const AchievementLab = lazy(() => import('./components/AchievementLab').then(m => ({ default: m.AchievementLab })))
 const ContributionFinder = lazy(() => import('./components/ContributionFinder').then(m => ({ default: m.ContributionFinder })))
 const RepositoryAdvisor = lazy(() => import('./components/RepositoryAdvisor').then(m => ({ default: m.RepositoryAdvisor })))
 const DataPortability = lazy(() => import('./components/DataPortability').then(m => ({ default: m.DataPortability })))
 
-function WorkspaceFallback({ label }: { label: string }) {
-  return <div className="v1-deferred" role="status" aria-live="polite"><span className="v1-deferred-dot"/> Preparing {label}...</div>
+const REPOSITORY_URL = 'https://github.com/kobrymoataz/repoverity'
+
+type NavItem = { id: WorkspaceId; label: string; icon: LucideIcon }
+const navigation: { label: string; items: NavItem[] }[] = [
+  { label: 'WORKSPACE', items: [
+    { id: 'overview', label: 'Overview', icon: LayoutGrid },
+    { id: 'repositories', label: 'Repositories', icon: BookOpen },
+    { id: 'analytics', label: 'Insights', icon: Activity },
+    { id: 'growth', label: 'Growth history', icon: TrendingUp },
+  ] },
+  { label: 'DEVELOPER TOOLS', items: [
+    { id: 'advisor', label: 'Repository advisor', icon: FileCheck2 },
+    { id: 'contributions', label: 'Find contributions', icon: Compass },
+    { id: 'achievements', label: 'Achievements', icon: Award },
+  ] },
+  { label: 'PROJECT', items: [
+    { id: 'privacy', label: 'Data & privacy', icon: Database },
+    { id: 'about', label: 'About RepoVerity', icon: ShieldCheck },
+  ] },
+]
+
+const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; category: string }> = {
+  overview: { title: 'Overview', subtitle: 'Public GitHub data, organized for a closer look.', category: 'WORKSPACE' },
+  repositories: { title: 'Repositories', subtitle: 'Find, filter and inspect projects in the public sample.', category: 'EXPLORE' },
+  analytics: { title: 'Profile insights', subtitle: 'Language distribution, repository activity and metadata coverage.', category: 'ANALYZE' },
+  growth: { title: 'Growth history', subtitle: 'Follow changes in recorded observations, not estimated history.', category: 'TRACK' },
+  advisor: { title: 'Repository advisor', subtitle: 'Review public metadata and check repository files on demand.', category: 'IMPROVE' },
+  contributions: { title: 'Find contributions', subtitle: 'Discover open issues that welcome contributors.', category: 'CONTRIBUTE' },
+  achievements: { title: 'Achievements', subtitle: 'Track GitHub achievement criteria and your own progress.', category: 'LEARN' },
+  privacy: { title: 'Data & privacy', subtitle: 'Export, restore and manage records stored on this device.', category: 'CONTROL' },
+  about: { title: 'About RepoVerity', subtitle: 'A clear view of what the project measures and what it cannot.', category: 'PROJECT' },
 }
-import { GithubApiError, normalizeUsername } from './lib/github'
-import {
-  activeWithinDays, calculateInsights, compactNumber, filterRepositories,
-  shortDate, type RepositoryFilter, type RepositorySort,
-} from './lib/insights'
-import type { GitHubRepository, GitHubUser } from './types/github'
 
-const OWNER = 'kobrymoataz'
-const REPOSITORY_URL = `https://github.com/${OWNER}/repoverity`
-
-type MetricProps = {
-  title: string
-  value: string
-  note: string
-  icon: LucideIcon
-  emphasis?: boolean
+function Brand() {
+  return <a className="rv-brand" href={workspaceHref('overview')} aria-label="RepoVerity home">
+    <span className="rv-brand-icon"><GitBranch size={19} strokeWidth={2.15}/></span>
+    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.1</span></span>
+  </a>
 }
 
-function Logo({ compact = false }: { compact?: boolean }) {
-  return (
-    <a href="#overview" className={`brand ${compact ? 'brand-compact' : ''}`} aria-label="RepoVerity home">
-      <span className="brand-emblem"><ShieldCheck size={22} strokeWidth={2.1} /></span>
-      <span className="brand-name">repo<span>verity</span><small>LABS</small></span>
-    </a>
-  )
-}
-
-function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const mainNav = [
-    { label: 'Overview', href: '#overview', icon: Layers3 },
-    { label: 'Growth analytics', href: '#growth', icon: TrendingUp },
-    { label: 'Achievement lab', href: '#achievements', icon: Award },
-    { label: 'Contribution finder', href: '#contributions', icon: GitPullRequest },
-    { label: 'Repository advisor', href: '#advisor', icon: Sparkles },
-    { label: 'Repository explorer', href: '#repositories', icon: Compass },
-    { label: 'Portfolio signals', href: '#signals', icon: Activity },
-    { label: 'Privacy & backup', href: '#privacy', icon: ShieldCheck },
-  ]
-  return (
-    <>
-      {open && <button className="mobile-backdrop" onClick={onClose} aria-label="Close menu" />}
-      <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
-        <div className="sidebar-head"><Logo /><button className="sidebar-close icon-button" onClick={onClose} aria-label="Close sidebar"><X size={18}/></button></div>
-        <div className="sidebar-menu">
-          <div className="nav-group-label">WORKSPACE</div>
-          <nav className="side-nav" aria-label="Main navigation">
-            {mainNav.map((item, index) => <a key={item.href} href={item.href} className={`side-link ${index === 0 ? 'side-link-current' : ''}`} onClick={onClose}>
-              <item.icon size={18} strokeWidth={1.85}/><span>{item.label}</span>{index===0 && <span className="active-pin"/>}
+function Sidebar({ active, open, close, username }: { active: WorkspaceId; open: boolean; close: () => void; username: string }) {
+  return <>
+    {open && <button type="button" className="rv-scrim" aria-label="Close navigation" onClick={close}/>}
+    <aside className={`rv-sidebar ${open ? 'rv-sidebar-open' : ''}`} aria-label="Primary navigation">
+      <div className="rv-sidebar-top"><Brand/><button type="button" className="rv-nav-close" onClick={close} aria-label="Close menu"><X size={18}/></button></div>
+      <div className="rv-sidebar-scroll">
+        <div className="rv-project-switch"><span className="rv-switch-symbol"><Github size={18}/></span><span className="rv-switch-text"><strong>Public workspace</strong><small>GitHub analysis</small></span><span className="rv-switch-status" title="Public API"/></div>
+        {navigation.map(group => <div className="rv-navigation-group" key={group.label}>
+          <div className="rv-navigation-label">{group.label}</div>
+          <nav aria-label={group.label} className="rv-nav-list">
+            {group.items.map(item => <a href={workspaceHref(item.id)} key={item.id} onClick={close}
+              className={`rv-nav-link ${active === item.id ? 'rv-nav-active' : ''}`} aria-current={active === item.id ? 'page' : undefined}>
+              <item.icon size={17} strokeWidth={1.85}/><span>{item.label}</span>
+              {active === item.id && <span className="rv-nav-indicator" aria-hidden="true"/>}
             </a>)}
           </nav>
-          <div className="nav-group-label nav-group-separator">PROJECT</div>
-          <nav className="side-nav" aria-label="Project navigation">
-            <a href="#roadmap" className="side-link" onClick={onClose}><Zap size={18}/><span>Development roadmap</span></a>
-            <a href={REPOSITORY_URL} className="side-link" target="_blank" rel="noreferrer" onClick={onClose}><Github size={18}/><span>View source code</span><ArrowUpRight size={14} className="side-link-external"/></a>
-          </nav>
-        </div>
-        <div className="sidebar-bottom">
-          <div className="open-source-card">
-            <span className="open-source-icon"><Code2 size={19}/></span>
-            <strong>Built in the open.</strong>
-            <p>Readable code, useful insights and a roadmap shaped by real developers.</p>
-            <a href={REPOSITORY_URL} target="_blank" rel="noreferrer">Explore repository <ArrowUpRight size={14}/></a>
-          </div>
-          <div className="sidebar-foot"><span><span className="mini-online"/> Stable open-source release</span><span>v1.0.0</span></div>
-        </div>
-      </aside>
-    </>
-  )
+        </div>)}
+      </div>
+      <div className="rv-sidebar-bottom">
+        <div className="rv-connected"><span className="rv-connected-dot"/><span>Viewing public GitHub data</span></div>
+        <div className="rv-sidebar-user"><span className="rv-user-glyph">@</span><span className="rv-sidebar-user-text"><strong>{username}</strong><small>Current account</small></span></div>
+        <a className="rv-sidebar-source" href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer"><Github size={15}/> View source code <ArrowUpRight size={14}/></a>
+      </div>
+    </aside>
+  </>
 }
 
-function Metric({ title, value, note, icon: Icon, emphasis }: MetricProps) {
-  return <div className={`metric-card ${emphasis ? 'metric-card-featured' : ''}`}>
-    <div className="metric-top"><span>{title}</span><span className="metric-icon"><Icon size={18}/></span></div>
-    <div className="metric-number">{value}</div>
-    <div className="metric-note">{note}</div>
+function SectionIntro({ view, action }: { view: WorkspaceId; action?: ReactNode }) {
+  const text = viewTitles[view]
+  return <div className="rv-page-heading">
+    <div><span className="rv-eyebrow">{text.category} <span>/</span> REPOVERITY</span><h1>{text.title}</h1><p>{text.subtitle}</p></div>
+    {action && <div className="rv-heading-action">{action}</div>}
   </div>
 }
 
-function StatSkeleton() {
-  return <div className="skeleton-grid" aria-label="Loading profile data">
-    {Array.from({ length: 4 }, (_, i) => <div className="metric-card" key={i}><span className="skeleton-line skeleton-sm"/><span className="skeleton-line skeleton-xl"/><span className="skeleton-line skeleton-md"/></div>)}
-  </div>
+function AccountSearch({ value, setValue, onSubmit, error, busy, inputRef }: {
+  value: string; setValue: (value: string) => void; onSubmit: (event: FormEvent<HTMLFormElement>) => void;
+  error: string | null; busy: boolean; inputRef: RefObject<HTMLInputElement | null>;
+}) {
+  return <form className="rv-account-form" onSubmit={onSubmit} noValidate role="search" aria-label="Look up a GitHub account">
+    <label htmlFor="rv-username-input" className="rv-search-label">GITHUB PROFILE</label>
+    <div className="rv-account-search-row">
+      <div className="rv-account-input-wrap"><Github size={18}/><input ref={inputRef} id="rv-username-input" type="text" value={value} onChange={event => setValue(event.target.value)}
+        autoComplete="off" spellCheck={false} placeholder="Username or github.com/username" aria-invalid={Boolean(error)} aria-describedby={error ? 'rv-search-error' : undefined}/><kbd>/</kbd></div>
+      <button className="rv-primary-button" type="submit" disabled={busy}>{busy ? 'Loading' : 'Analyze'}<ArrowRight size={16}/></button>
+    </div>
+    {error && <p id="rv-search-error" className="rv-search-error" role="alert">{error}</p>}
+  </form>
 }
 
-function Avatar({ user }: { user: GitHubUser }) {
-  return <img className="profile-avatar" src={user.avatar_url} alt={`${user.login}'s GitHub avatar`} loading="lazy" referrerPolicy="no-referrer" />
-}
-
-function PublicProfile({ user, loaded, fetchedAt }: { user: GitHubUser; loaded: number; fetchedAt: number }) {
-  return <div className="profile-card fade-in">
-    <div className="profile-card-left">
-      <span className="profile-avatar-frame"><Avatar user={user}/><span className="avatar-tick"><Check size={11} strokeWidth={3}/></span></span>
-      <div className="profile-text">
-        <div className="profile-title-line"><h2>{user.name || user.login}</h2><span className="public-chip"><Globe2 size={12}/> PUBLIC PROFILE</span></div>
-        <a className="profile-handle" href={user.html_url} target="_blank" rel="noreferrer">@{user.login} <ArrowUpRight size={13}/></a>
-        <p>{user.bio || 'No public bio added to this GitHub profile yet.'}</p>
-        <div className="profile-meta">
-          {user.location && <span><MapPin size={13}/>{user.location}</span>}
-          <span><Clock3 size={13}/>Joined {shortDate(user.created_at)}</span>
-          <span><CircleDot size={13}/>Updated {new Date(fetchedAt).toLocaleTimeString('en', { hour: '2-digit', minute: '2-digit' })}</span>
-        </div>
+function ProfileCard({ snapshot }: { snapshot: GitHubSnapshot }) {
+  const user = snapshot.user
+  return <section className="rv-profile-card" aria-label="Public GitHub profile">
+    <div className="rv-profile-identity">
+      <img className="rv-avatar" src={user.avatar_url} loading="lazy" alt={`${user.login} avatar`} referrerPolicy="no-referrer"/>
+      <div className="rv-profile-copy"><span className="rv-kicker">PUBLIC PROFILE</span>
+        <div className="rv-profile-name-row"><h2>{user.name || user.login}</h2><a href={user.html_url} target="_blank" rel="noopener noreferrer" aria-label="Open GitHub profile"><ArrowUpRight size={17}/></a></div>
+        <div className="rv-handle">@{user.login}</div>
+        <p>{user.bio || 'No public biography available for this account.'}</p>
+        <div className="rv-profile-meta">{user.location && <span><MapPin size={14}/>{user.location}</span>}<span><Clock3 size={14}/>Joined {shortDate(user.created_at)}</span></div>
       </div>
     </div>
-    <div className="profile-card-right">
-      <span className="coverage-label">REPOSITORY COVERAGE</span>
-      <span className="coverage-number">{loaded}<span> / {user.public_repos}</span></span>
-      <div className="coverage-bar"><span style={{width: `${Math.min(100, user.public_repos > 0 ? loaded / user.public_repos * 100 : 100)}%`}}/></div>
-      <span className="coverage-desc">Most recently updated, up to 100</span>
+    <div className="rv-profile-coverage"><span className="rv-coverage-label">REPOSITORIES ANALYZED</span><div><strong>{snapshot.repositories.length}</strong><span> / {user.public_repos}</span></div>
+      <div className="rv-coverage-track"><span style={{width:`${Math.min(100,user.public_repos ? snapshot.repositories.length / user.public_repos * 100 : 100)}%`}}/></div>
+      <p>Recently updated public repositories, up to 100.</p>
     </div>
+  </section>
+}
+
+function Metric({ label, value, hint, icon: Icon }: { label: string; value: string; hint: string; icon: LucideIcon }) {
+  return <div className="rv-metric"><div className="rv-metric-heading"><span>{label}</span><Icon size={17}/></div><strong>{value}</strong><p>{hint}</p></div>
+}
+
+function Metrics({ snapshot, insights }: { snapshot: GitHubSnapshot; insights: NonNullable<ReturnType<typeof calculateInsights>> }) {
+  return <div className="rv-metrics" aria-label="GitHub account statistics">
+    <Metric icon={Users} label="FOLLOWERS" value={compactNumber(snapshot.user.followers)} hint="GitHub public count"/>
+    <Metric icon={BookOpen} label="PUBLIC REPOS" value={compactNumber(snapshot.user.public_repos)} hint="Reported by GitHub"/>
+    <Metric icon={Star} label="SAMPLED STARS" value={compactNumber(insights.stars)} hint={`Across ${snapshot.repositories.length} loaded repos`}/>
+    <Metric icon={GitFork} label="SAMPLED FORKS" value={compactNumber(insights.forks)} hint={`Across ${snapshot.repositories.length} loaded repos`}/>
   </div>
 }
 
-function LanguagePanel({ languages }: { languages: { name: string; count: number; percent: number }[] }) {
-  return <section className="panel panel-language" aria-labelledby="languages-title">
-    <div className="panel-heading"><div><div className="eyebrow">CODE LANDSCAPE</div><h3 id="languages-title">Language distribution</h3></div><span className="panel-heading-icon"><Code2 size={18}/></span></div>
-    {languages.length ? <div className="language-bars">{languages.map((language, index) => <div className="language-row" key={language.name}>
-      <div className="language-name"><span className={`language-dot language-color-${index}`}/><span>{language.name}</span><span className="language-percent">{language.percent}%</span></div>
-      <div className="language-track"><span className={`language-fill language-fill-${index}`} style={{width: `${language.percent}%`}}/></div>
-    </div>)}</div> : <p className="empty-small">No language metadata in this sample.</p>}
-    <div className="panel-foot"><span><CircleDot size={13}/> Based on primary repository language</span><span>TOP 5</span></div>
-  </section>
+function LanguageDistribution({ insights }: { insights: ReturnType<typeof calculateInsights> }) {
+  return <section className="rv-panel"><div className="rv-panel-header"><div><span className="rv-kicker">TECHNOLOGIES</span><h2>Languages</h2></div><Code2 size={19}/></div>
+    <div className="rv-language-items">{insights.languages.length ? insights.languages.map((lang, i) => <div className="rv-language-item" key={lang.name}>
+      <div className="rv-language-label"><span><i className={`rv-language-dot rv-language-dot-${i}`}/>{lang.name}</span><strong>{lang.percent}%</strong></div>
+      <div className="rv-language-track"><div className={`rv-language-fill rv-language-fill-${i}`} style={{width:`${lang.percent}%`}}/></div>
+    </div>) : <p className="rv-empty-inline">No primary language information in this sample.</p>}</div>
+    <p className="rv-panel-note">Based on the primary language of each sampled repository.</p></section>
 }
 
-function SignalPanel({ signals, total }: { signals: ReturnType<typeof calculateInsights>['signals']; total: number }) {
-  return <section className="panel panel-signals" id="signals" aria-labelledby="signals-title">
-    <div className="panel-heading"><div><div className="eyebrow">PORTFOLIO HYGIENE</div><h3 id="signals-title">Quality signals</h3></div><span className="panel-heading-icon"><ShieldCheck size={18}/></span></div>
-    <div className="signals-list">{signals.map(signal => <div className="signal-row" key={signal.label}>
-      <div className="signal-text"><span>{signal.label}<small>{signal.detail}</small></span><strong>{signal.value}%</strong></div>
-      <div className="signal-track"><span style={{width: `${signal.value}%`}}/></div>
+function MetadataCoverage({ insights }: { insights: ReturnType<typeof calculateInsights> }) {
+  return <section className="rv-panel"><div className="rv-panel-header"><div><span className="rv-kicker">PUBLISHING PRACTICES</span><h2>Metadata coverage</h2></div><FileCheck2 size={19}/></div>
+    <div className="rv-signal-list">{insights.signals.map(signal => <div className="rv-signal-item" key={signal.label}>
+      <div><span>{signal.label}</span><strong>{signal.value}%</strong></div>
+      <div className="rv-language-track"><span style={{width:`${signal.value}%`}}/></div>
     </div>)}</div>
-    <div className="panel-foot"><span><CircleDot size={13}/> Signals, not a security audit</span><span>{total} REPOS</span></div>
-  </section>
+    <p className="rv-panel-note">Simple metadata checks, not a security assessment.</p></section>
 }
 
-function RepositoryItem({ repo }: { repo: GitHubRepository }) {
-  const updated = shortDate(repo.pushed_at || repo.updated_at)
-  const recent = activeWithinDays(repo, 90)
-  return <article className="repo-card">
-    <div className="repo-top-line"><span className="repo-glyph"><BookOpen size={18}/></span><div className="repo-heading">
-      <a href={repo.html_url} target="_blank" rel="noreferrer" className="repo-title">{repo.name}<ArrowUpRight size={16}/></a>
-      <div className="repo-flags">{repo.archived && <span className="repo-flag">ARCHIVED</span>}{repo.fork && <span className="repo-flag">FORK</span>}</div>
-    </div><a className="repo-open" href={repo.html_url} target="_blank" rel="noreferrer" aria-label={`Open ${repo.name} on GitHub`}><ExternalLink size={16}/></a></div>
-    <p className="repo-description">{repo.description || 'No description provided yet for this repository.'}</p>
-    <div className="repo-tags">{repo.topics.slice(0, 3).map(tag => <span key={tag}>{tag}</span>)}</div>
-    <div className="repo-bottom">
-      <div className="repo-stats"><span><Star size={14}/>{compactNumber(repo.stargazers_count)}</span><span><GitFork size={14}/>{compactNumber(repo.forks_count)}</span>{repo.language && <span className="repo-language"><i/>{repo.language}</span>}</div>
-      <span className="repo-updated">{recent && <i/>}{updated}</span>
-    </div>
-  </article>
+function RepositoryTable({ repositories, condensed=false }: { repositories: GitHubRepository[]; condensed?: boolean }) {
+  return <div className="rv-table-scroll"><table className="rv-repository-table">
+    <thead><tr><th scope="col">Repository</th><th scope="col">Language</th><th scope="col">Stars</th><th scope="col">Forks</th><th scope="col">Last push</th><th scope="col"><span className="rv-visually-hidden">Open</span></th></tr></thead>
+    <tbody>{repositories.map(repo => <tr key={repo.id}>
+      <td><a href={repo.html_url} className="rv-table-repo" target="_blank" rel="noopener noreferrer"><span className="rv-repo-symbol"><BookOpen size={15}/></span><span><strong>{repo.name}</strong><small>{repo.description || 'No repository description'}</small></span></a></td>
+      <td><span className="rv-language-cell">{repo.language ? <i/> : null}{repo.language || 'Unspecified'}</span></td>
+      <td><span className="rv-num-cell"><Star size={14}/>{compactNumber(repo.stargazers_count)}</span></td>
+      <td><span className="rv-num-cell"><GitFork size={14}/>{compactNumber(repo.forks_count)}</span></td>
+      <td><span className="rv-date-cell">{shortDate(repo.pushed_at || repo.updated_at)}</span></td>
+      <td><a className="rv-row-open" href={repo.html_url} target="_blank" rel="noopener noreferrer" aria-label={`View ${repo.name} on GitHub`}><ArrowUpRight size={16}/></a></td>
+    </tr>)}</tbody>
+  </table>{repositories.length===0 && <div className="rv-table-empty"><Search size={23}/><strong>No matching repositories</strong><p>Change the search term or filter.</p></div>}
+  {!condensed && repositories.length > 0 && <p className="rv-table-note">The table includes owned public repositories returned by GitHub.</p>}
+  </div>
 }
 
-function Roadmap() {
-  const features = [
-    { icon: FileCheck2, title: 'Achievement lab + issue finder', detail: 'Educational badge roadmap and real open-source discovery.', status: 'V0.4', done: true },
-    { icon: Sparkles, title: 'Repository advisor', detail: 'Public metadata recommendations and on-demand file hygiene checks.', status: 'V0.5', done: true },
-    { icon: ShieldCheck, title: 'Stable public release', detail: 'Private local backups, accessible navigation, better performance and tested Pages deployment.', status: 'V1.0', done: true },
+function AsyncFallback({ title }: { title: string }) {
+  return <div className="rv-async-fallback" role="status"><span className="rv-loader"/>Loading {title.toLowerCase()}...</div>
+}
+
+function LoadingProfile() {
+  return <div className="rv-loading-profile" role="status" aria-live="polite"><span className="rv-loader"/><div><strong>Retrieving public profile</strong><p>Requesting current information from GitHub.</p></div></div>
+}
+
+function ErrorProfile({ message, retry }: { message: string | null; retry: () => void }) {
+  return <section className="rv-error-panel" role="alert"><AlertCircle size={22}/><div><h2>Profile unavailable</h2><p>{message || 'GitHub could not return this account.'}</p><p>Unauthenticated GitHub requests have rate limits. You can try again later.</p><button className="rv-outline-button" type="button" onClick={retry}><RefreshCw size={15}/> Retry request</button></div></section>
+}
+
+function AboutView() {
+  const links = [
+    { label: 'Source code', url: REPOSITORY_URL, icon: Github },
+    { label: 'Architecture', url: `${REPOSITORY_URL}/blob/main/docs/ARCHITECTURE.md`, icon: GitBranch },
+    { label: 'Contribute', url: `${REPOSITORY_URL}/blob/main/CONTRIBUTING.md`, icon: BookOpen },
+    { label: 'Privacy policy', url: `${REPOSITORY_URL}/blob/main/docs/PRIVACY.md`, icon: ShieldCheck },
   ]
-  return <section id="roadmap" className="roadmap-section">
-    <div className="section-title-row"><div><div className="eyebrow">WHAT'S NEXT</div><h2>Built openly. Improved deliberately.</h2><p>We're starting with truthful public data, then adding useful capabilities one release at a time.</p></div><span className="planned-badge"><CircleDot size={13}/> ROADMAP</span></div>
-    <div className="roadmap-grid">{features.map(({icon: Icon,title,detail,status,done}) => <article className="roadmap-card" key={title}>
-      <div className="roadmap-card-head"><span className="roadmap-icon"><Icon size={19}/></span><span className="roadmap-version">{status}</span></div>
-      <h3>{title}</h3><p>{detail}</p><div className="roadmap-bottom"><span className="planned-dot"/> {done ? 'SHIPPED' : 'PLANNED'} <ArrowDownRight size={16}/></div>
-    </article>)}</div>
-  </section>
-}
-
-function LoadingContent() {
-  return <><div className="loading-identity"><span className="skeleton-avatar"/><div><span className="skeleton-line skeleton-lg"/><span className="skeleton-line skeleton-md"/></div></div><StatSkeleton/><div className="loading-panels"><div/><div/></div></>
+  return <div className="rv-about-grid"><section className="rv-panel rv-about-leading"><div className="rv-about-mark"><GitBranch size={27}/></div><h2>Public information, shown with its limits.</h2><p>RepoVerity helps developers inspect public GitHub profiles, discover contributions, follow their own measured growth and improve repository documentation. The application is open source and does not require a GitHub account login.</p><div className="rv-about-facts"><span>React + TypeScript</span><span>GitHub REST API</span><span>Local-first tracking</span><span>MIT license</span></div></section>
+    <section className="rv-panel"><div className="rv-panel-header"><h2>Project resources</h2><ExternalLink size={17}/></div><div className="rv-resource-links">{links.map(link=><a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer"><link.icon size={18}/><span>{link.label}</span><ArrowUpRight size={16}/></a>)}</div></section>
+    <section className="rv-panel rv-about-limit"><span className="rv-kicker">DATA METHODOLOGY</span><h2>Read the numbers correctly</h2><p>Stars and forks summarize a sample of up to 100 recently updated public repositories. Growth graphs contain observations from days when tracking was enabled and this browser visited the page. Achievement progress is entered by the user. File presence checks are not vulnerability scans.</p></section>
+  </div>
 }
 
 function App() {
   const { username, snapshot, status, error, analyze, retry } = useGithubProfile()
   const growth = useGrowthHistory(snapshot, status === 'success')
+  const [active, setActive] = useState<WorkspaceId>(()=>workspaceFromHash(window.location.hash))
+  const [menuOpen, setMenuOpen] = useState(false)
   const [draftUsername, setDraftUsername] = useState(username)
   const [validationMessage, setValidationMessage] = useState<string | null>(null)
+  const [copied, setCopied] = useState(false)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<RepositoryFilter>('all')
   const [sort, setSort] = useState<RepositorySort>('stars')
-  const [visibleCount, setVisibleCount] = useState(6)
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [visibleCount, setVisibleCount] = useState(12)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
-  const insights = useMemo(() => snapshot && calculateInsights(snapshot.repositories), [snapshot])
+  const insights = useMemo(() => snapshot ? calculateInsights(snapshot.repositories) : null, [snapshot])
   const filteredRepositories = useMemo(() => snapshot ? filterRepositories(snapshot.repositories, query, filter, sort) : [], [snapshot, query, filter, sort])
 
-  useEffect(() => { setVisibleCount(6) }, [query, filter, sort, snapshot])
+  useEffect(() => {
+    function syncView() {
+      setActive(workspaceFromHash(window.location.hash))
+      window.scrollTo({top:0,behavior:'auto'})
+    }
+    window.addEventListener('hashchange', syncView)
+    return () => window.removeEventListener('hashchange', syncView)
+  }, [])
+  useEffect(() => {setVisibleCount(12)}, [query, filter, sort, snapshot])
+  useEffect(() => {
+    function shortcuts(event: KeyboardEvent) {
+      const element = event.target as HTMLElement | null
+      const editing = element?.matches('input,textarea,select,[contenteditable="true"]')
+      if (event.key === '/' && !editing && !event.metaKey && !event.ctrlKey && !event.altKey) {
+        event.preventDefault()
+        searchInputRef.current?.focus()
+      }
+      if (event.key === 'Escape') setMenuOpen(false)
+    }
+    window.addEventListener('keydown', shortcuts)
+    return () => window.removeEventListener('keydown', shortcuts)
+  }, [])
 
-  function doAnalyze(next: string) {
+  function doAnalyze(raw: string) {
     try {
-      const validName = normalizeUsername(next)
-      setDraftUsername(validName)
+      const clean = normalizeUsername(raw)
+      setDraftUsername(clean)
       setValidationMessage(null)
       setQuery('')
       setFilter('all')
-      analyze(validName)
+      analyze(clean)
+      if (active !== 'overview') window.location.hash = workspaceHref('overview')
     } catch (reason) {
       setValidationMessage(reason instanceof GithubApiError ? reason.message : 'Enter a valid GitHub username.')
+      searchInputRef.current?.focus()
     }
   }
-
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     doAnalyze(draftUsername)
   }
-
-  async function copyLink() {
+  async function copyShareLink() {
     try {
       await navigator.clipboard.writeText(window.location.href)
       setCopied(true)
-      window.setTimeout(() => setCopied(false), 2000)
-    } catch {
-      setCopied(false)
-    }
+      window.setTimeout(()=>setCopied(false), 1800)
+    } catch {setCopied(false)}
   }
+  const isLoaded = status === 'success' && snapshot && insights
+  const title = viewTitles[active]
 
-  const total = snapshot?.repositories.length ?? 0
-
-  return <div className="app-shell" id="overview">
-    <a className="v1-skip-link" href="#main-content">Skip to main content</a>
-    <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)}/>
-    <div className="main-area">
-      <header className="app-topbar">
-        <button className="topbar-menu icon-button" onClick={() => setMenuOpen(true)} aria-label="Open menu"><Menu size={22}/></button>
-        <div className="breadcrumb"><span>WORKSPACE</span><ArrowRight size={13}/><strong>Developer intelligence</strong></div>
-        <div className="topbar-actions"><span className="beta-status"><span/> PUBLIC API / NO LOGIN</span><a href={REPOSITORY_URL} target="_blank" rel="noreferrer" className="top-source-link"><Github size={16}/> Source code <ArrowUpRight size={14}/></a></div>
-      </header>
-
-      <main className="content" id="main-content" tabIndex={-1}>
-        <div className="hero">
-          <div className="hero-grid" aria-hidden="true"/><div className="hero-orb hero-orb-one" aria-hidden="true"/><div className="hero-orb hero-orb-two" aria-hidden="true"/>
-          <div className="hero-copy">
-            <div className="hero-kicker"><span className="pulsing-dot"/> REPOVERITY <span> / </span> STABLE V1.0</div>
-            <h1>Make your GitHub<br/><span>presence count.</span></h1>
-            <p>Explore real GitHub activity, build stronger public repositories, discover meaningful contributions, and keep your personal growth history portable. Transparent signals. No manufactured engagement.</p>
-            <div className="hero-tags"><span><Check size={14}/> Public data only</span><span><Check size={14}/> No account required</span><span><Check size={14}/> No follower bots</span></div>
-          </div>
-          <div className="lookup-box">
-            <div className="lookup-header"><span><Search size={17}/> PROFILE LOOKUP</span><span className="lookup-version">01 / 01</span></div>
-            <form onSubmit={onSubmit} noValidate>
-              <label htmlFor="username-input">GitHub username or profile link</label>
-              <div className="lookup-input-wrap"><Github size={19}/><input id="username-input" value={draftUsername} onChange={event => {setDraftUsername(event.target.value);setValidationMessage(null)}} autoComplete="off" spellCheck={false} placeholder="e.g. kobrymoataz" aria-describedby={validationMessage ? 'username-error' : undefined} aria-invalid={Boolean(validationMessage)}/></div>
-              {validationMessage && <span className="lookup-error" id="username-error">{validationMessage}</span>}
-              <button className="primary-button" type="submit" disabled={status==='loading'}>{status === 'loading' ? 'Analyzing profile...' : 'Analyze profile'}<ArrowRight size={17}/></button>
-            </form>
-            <div className="lookup-foot">OR TRY <button type="button" onClick={()=>doAnalyze('torvalds')}>torvalds <ArrowUpRight size={12}/></button><button type="button" onClick={()=>doAnalyze('gaearon')}>gaearon <ArrowUpRight size={12}/></button></div>
-          </div>
+  return <div className="rv-app">
+    <a className="rv-skip" href="#main-content" onClick={event=>{event.preventDefault();document.getElementById('main-content')?.focus()}}>Skip to content</a>
+    <Sidebar active={active} open={menuOpen} close={()=>setMenuOpen(false)} username={username}/>
+    <div className="rv-main-column">
+      <header className="rv-topbar">
+        <div className="rv-topbar-left"><button type="button" className="rv-mobile-menu" aria-label="Open menu" onClick={()=>setMenuOpen(true)}><Menu size={20}/></button>
+          <span className="rv-topbar-home">Workspace</span><span className="rv-topbar-separator">/</span><span className="rv-topbar-current">{title.title}</span>
         </div>
+        <div className="rv-topbar-right"><span className="rv-topbar-public"><span className="rv-live-indicator"/>Public API</span>
+          {isLoaded && <button type="button" className="rv-topbar-icon" onClick={retry} aria-label="Refresh account data" title="Refresh account data"><RefreshCw size={16}/></button>}
+          <a className="rv-topbar-github" href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer" aria-label="Open RepoVerity source code"><Github size={17}/><span>GitHub</span><ArrowUpRight size={14}/></a>
+        </div>
+      </header>
+      <main className="rv-content" id="main-content" tabIndex={-1}>
+        <SectionIntro view={active} action={isLoaded ? <button type="button" className="rv-outline-button" onClick={copyShareLink}>{copied ? <Check size={16}/> : <Copy size={16}/>} {copied ? 'Link copied' : 'Share view'}</button> : undefined}/>
+        <div className="rv-top-search"><AccountSearch value={draftUsername} setValue={value=>{setDraftUsername(value);setValidationMessage(null)}} onSubmit={onSubmit} error={validationMessage} busy={status==='loading'} inputRef={searchInputRef}/><div className="rv-top-search-footer"><span>Public GitHub accounts only. No authorization required.</span><span>Press <kbd>/</kbd> to focus search</span></div></div>
 
-        <div className="dashboard-status" aria-live="polite" aria-atomic="true"><div className="eyebrow">LIVE PROFILE SNAPSHOT</div><div className="dashboard-status-right"><span className="status-text"><span className="tiny-green-dot"/>{status==='loading' ? 'FETCHING PUBLIC DATA' : status==='error' ? 'REQUEST FAILED' : 'DATA RECEIVED'}</span><button type="button" onClick={copyLink} className="share-link"><span>{copied ? 'Copied' : 'Share report'}</span>{copied ? <Check size={14}/> : <Copy size={14}/>}</button></div></div>
+        {active !== 'privacy' && active !== 'about' && active !== 'contributions' && status === 'loading' && <LoadingProfile/>}
+        {active !== 'privacy' && active !== 'about' && active !== 'contributions' && status === 'error' && <ErrorProfile message={error} retry={retry}/>}
 
-        {status==='loading' && <LoadingContent/>}
-        {status==='error' && <div className="error-panel" role="alert"><span className="error-icon"><ShieldCheck size={25}/></span><div><h2>We couldn't load this profile.</h2><p>{error}</p><p className="error-hint">RepoVerity reads GitHub's public API. Unauthenticated requests are limited and may temporarily be unavailable.</p><button className="secondary-button" type="button" onClick={retry}>Try again <ArrowRight size={16}/></button></div></div>}
-        {status==='success' && snapshot && insights && <div className="fade-in">
-          <PublicProfile user={snapshot.user} loaded={total} fetchedAt={snapshot.fetchedAt}/>
-          <div className="metrics-grid" aria-label="GitHub profile statistics">
-            <Metric title="FOLLOWERS" value={compactNumber(snapshot.user.followers)} note="People following this account" icon={Users} emphasis/>
-            <Metric title="PUBLIC REPOSITORIES" value={compactNumber(snapshot.user.public_repos)} note="Public count reported by GitHub" icon={BookOpen}/>
-            <Metric title="STARS IN SAMPLE" value={compactNumber(insights.stars)} note={`From ${total} loaded repositories`} icon={Star}/>
-            <Metric title="FORKS IN SAMPLE" value={compactNumber(insights.forks)} note={`From ${total} loaded repositories`} icon={GitFork}/>
-          </div>
-          <Suspense fallback={<WorkspaceFallback label="growth analytics"/>}>
-          <GrowthAnalytics
-            username={snapshot.user.login}
-            currentFollowers={snapshot.user.followers}
-            currentSampleStars={insights.stars}
-            profile={growth.profile}
-            enabled={growth.enabled}
-            storageError={growth.storageError}
-            limitReached={growth.limitReached}
-            onToggle={growth.toggleTracking}
-            onGoal={growth.updateGoal}
-            onRefresh={retry}
-            onClear={growth.clearHistory}
-          />
-          </Suspense>
-          <Suspense fallback={<WorkspaceFallback label="achievement lab"/>}>
-            <AchievementLab username={snapshot.user.login} repositories={snapshot.repositories}/>
-          </Suspense>
-          <Suspense fallback={<WorkspaceFallback label="contribution finder"/>}>
-            <ContributionFinder/>
-          </Suspense>
-          <Suspense fallback={<WorkspaceFallback label="repository advisor"/>}>
-            <RepositoryAdvisor username={snapshot.user.login} repositories={snapshot.repositories}/>
-          </Suspense>
-          <div className="insights-grid"><LanguagePanel languages={insights.languages}/><SignalPanel signals={insights.signals} total={total}/></div>
-          <section className="repositories-section" id="repositories">
-            <div className="section-title-row section-heading-repos"><div><div className="eyebrow">THE WORK BEHIND THE PROFILE</div><h2>Repository explorer</h2><p>Search, compare and open public repositories from this account.</p></div><a className="view-github-link" href={`${snapshot.user.html_url}?tab=repositories`} target="_blank" rel="noreferrer">View on GitHub <ArrowUpRight size={15}/></a></div>
-            <div className="repo-toolbar"><div className="repo-filters" role="group" aria-label="Repository filter">{([['all','All repositories'],['starred','With stars'],['active','Active 90d']] as const).map(([key,label]) => <button key={key} type="button" aria-pressed={filter === key} onClick={() => setFilter(key)} className={filter===key?'filter-active':''}>{label}</button>)}</div><div className="repo-tools"><label className="repo-search"><Search size={16}/><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Search repositories" aria-label="Search repositories"/></label><label className="sort-select-wrap"><Filter size={14}/><select aria-label="Sort repositories" value={sort} onChange={event => setSort(event.target.value as RepositorySort)}><option value="stars">Most stars</option><option value="recent">Recently pushed</option><option value="forks">Most forks</option></select><ChevronDown size={13}/></label></div></div>
-            <div className="repo-result-caption">SHOWING {Math.min(visibleCount, filteredRepositories.length)} OF {filteredRepositories.length} MATCHING REPOSITORIES</div>
-            {filteredRepositories.length ? <div className="repo-grid">{filteredRepositories.slice(0,visibleCount).map(repo => <RepositoryItem key={repo.id} repo={repo}/>)}</div> : <div className="repo-empty"><Search size={23}/><h3>No repositories match.</h3><p>Try a different search or filter.</p><button type="button" onClick={()=>{setQuery('');setFilter('all')}}>Clear filters <ArrowRight size={15}/></button></div>}
-            {visibleCount < filteredRepositories.length && <button type="button" className="load-more" onClick={()=>setVisibleCount(n=>n+6)}>Load more repositories <ArrowRight size={16}/></button>}
-            {snapshot.user.public_repos > total && <div className="sampling-note"><CircleDot size={15}/> RepoVerity analyzes up to 100 recently updated public repositories. Counts labeled “in sample” do not represent every repository.</div>}
-          </section>
+        {active === 'overview' && isLoaded && <div className="rv-view rv-overview-view" key={`overview-${snapshot.user.id}`}>
+          <ProfileCard snapshot={snapshot}/>
+          <Metrics snapshot={snapshot} insights={insights}/>
+          <div className="rv-section-top"><div><span className="rv-kicker">PORTFOLIO</span><h2>Project signals</h2></div><a className="rv-text-link" href={workspaceHref('analytics')}>Explore insights <ArrowRight size={16}/></a></div>
+          <div className="rv-insights-grid"><LanguageDistribution insights={insights}/><MetadataCoverage insights={insights}/></div>
+          <div className="rv-section-top"><div><span className="rv-kicker">RECENTLY UPDATED</span><h2>Public repositories</h2></div><a className="rv-text-link" href={workspaceHref('repositories')}>All repositories <ArrowRight size={16}/></a></div>
+          <section className="rv-table-panel"><RepositoryTable repositories={[...snapshot.repositories].sort((a,b)=>Date.parse(b.pushed_at||b.updated_at)-Date.parse(a.pushed_at||a.updated_at)).slice(0,6)} condensed/></section>
+          <div className="rv-footnote"><Globe2 size={15}/>This account has {snapshot.user.public_repos} public repositories. Stars and forks reflect only the sample displayed here.</div>
         </div>}
 
-        <Suspense fallback={<WorkspaceFallback label="local backup tools"/>}><DataPortability/></Suspense>
-        <Roadmap/>
-        <footer className="site-footer"><span className="footer-brand"><span className="tiny-green-dot"/> REPOVERITY <span>© {new Date().getFullYear()}</span></span><span>Public data. Clear signals. No manufactured engagement.</span><a href={REPOSITORY_URL} target="_blank" rel="noreferrer">Crafted by @{OWNER} <ArrowUpRight size={13}/></a></footer>
+        {active === 'repositories' && isLoaded && <div className="rv-view">
+          <div className="rv-view-summary"><span><BookOpen size={17}/>{snapshot.repositories.length} loaded repositories</span><a href={`${snapshot.user.html_url}?tab=repositories`} target="_blank" rel="noopener noreferrer">Open on GitHub <ArrowUpRight size={15}/></a></div>
+          <div className="rv-repo-toolbar"><div className="rv-filter-tabs" role="group" aria-label="Repository status filter">
+            {([['all','All'],['starred','With stars'],['active','Active recently']] as const).map(([value,label])=><button type="button" key={value} aria-pressed={filter===value} className={filter===value?'rv-filter-selected':''} onClick={()=>setFilter(value)}>{label}</button>)}
+          </div><div className="rv-repo-controls"><label className="rv-small-search"><Search size={16}/><input type="search" value={query} onChange={event=>setQuery(event.target.value)} placeholder="Find a repository" aria-label="Search repository list"/></label>
+          <label className="rv-select"><Filter size={15}/><select value={sort} onChange={event=>setSort(event.target.value as RepositorySort)} aria-label="Sort repositories"><option value="stars">Most stars</option><option value="recent">Recently pushed</option><option value="forks">Most forks</option></select><ChevronDown size={14}/></label></div></div>
+          <section className="rv-table-panel"><div className="rv-table-panel-heading"><strong>Repository index</strong><span>{filteredRepositories.length} matching results</span></div><RepositoryTable repositories={filteredRepositories.slice(0,visibleCount)}/>
+          {visibleCount<filteredRepositories.length && <div className="rv-table-actions"><button type="button" className="rv-outline-button" onClick={()=>setVisibleCount(count=>count+12)}>Show more repositories <ArrowRight size={15}/></button></div>}</section>
+          {snapshot.user.public_repos>snapshot.repositories.length && <div className="rv-footnote"><AlertCircle size={16}/>GitHub's public repository count exceeds the loaded sample. Detailed pagination is planned for a later release.</div>}
+        </div>}
+
+        {active === 'analytics' && isLoaded && <div className="rv-view">
+          <Metrics snapshot={snapshot} insights={insights}/>
+          <div className="rv-insights-grid rv-analytics-panels"><LanguageDistribution insights={insights}/><MetadataCoverage insights={insights}/></div>
+          <section className="rv-panel rv-analytics-method"><div className="rv-panel-header"><h2>How these figures are calculated</h2><Globe2 size={18}/></div>
+            <p>The follower and public repository counts come directly from GitHub. Stars, forks, language distribution and metadata indicators use the loaded sample of up to 100 recently updated public repositories. They are not comprehensive account totals or security ratings.</p>
+            <a className="rv-text-link" href={`${REPOSITORY_URL}/blob/main/docs/ARCHITECTURE.md`} target="_blank" rel="noopener noreferrer">Read methodology <ArrowUpRight size={16}/></a></section>
+        </div>}
+
+        {active === 'growth' && isLoaded && <div className="rv-view rv-feature-page rv-growth-page"><Suspense fallback={<AsyncFallback title="Growth history"/>}>
+          <GrowthAnalytics username={snapshot.user.login} currentFollowers={snapshot.user.followers} currentSampleStars={insights.stars} profile={growth.profile} enabled={growth.enabled} storageError={growth.storageError} limitReached={growth.limitReached} onToggle={growth.toggleTracking} onGoal={growth.updateGoal} onRefresh={retry} onClear={growth.clearHistory}/>
+        </Suspense></div>}
+
+        {active === 'achievements' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Achievements"/>}><AchievementLab username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}
+        {active === 'advisor' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Repository advisor"/>}><RepositoryAdvisor username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}
+        {active === 'contributions' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Contribution finder"/>}><ContributionFinder/></Suspense></div>}
+        {active === 'privacy' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Data management"/>}><DataPortability/></Suspense></div>}
+        {active === 'about' && <div className="rv-view"><AboutView/></div>}
+
+        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.1</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
       </main>
     </div>
   </div>

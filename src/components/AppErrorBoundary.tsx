@@ -18,9 +18,9 @@ export class AppErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.failed) return <main className="fatal-error" role="alert">
       <div className="fatal-error-inner">
-        <span className="fatal-brand">REPOVERITY / STABLE RELEASE</span>
-        <h1>The dashboard could not be displayed.</h1>
-        <p>Your data is still stored locally in this browser. Try reloading the page; if the problem continues, open an issue with the reproduction steps. Do not post exported personal tracking backups publicly.</p>
+        <span className="fatal-brand">REPOVERITY / APPLICATION ERROR</span>
+        <h1>The workspace could not be displayed.</h1>
+        <p>Try reloading the workspace. Your locally stored tracking data is not deleted by a display error. If the problem continues, report the steps to reproduce it without sharing personal data or backup files.</p>
         <button type="button" onClick={() => window.location.reload()}>Reload RepoVerity</button>
         <a href="https://github.com/kobrymoataz/repoverity/issues/new/choose" target="_blank" rel="noreferrer">Report an issue</a>
       </div>
