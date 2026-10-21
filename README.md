@@ -1,17 +1,17 @@
 # RepoVerity
 
-**Understand public GitHub work. Measure real growth.**
+**Understand public GitHub work. Measure real growth. Find meaningful contributions.**
 
 [![Quality checks](https://github.com/kobrymoataz/repoverity/actions/workflows/ci.yml/badge.svg)](https://github.com/kobrymoataz/repoverity/actions/workflows/ci.yml)
 [![GitHub Pages](https://github.com/kobrymoataz/repoverity/actions/workflows/deploy.yml/badge.svg)](https://github.com/kobrymoataz/repoverity/actions/workflows/deploy.yml)
-![Release](https://img.shields.io/badge/version-0.3.0-83E0C3?style=flat-square)
+![Release](https://img.shields.io/badge/version-0.4.0-83E0C3?style=flat-square)
 ![License](https://img.shields.io/badge/license-MIT-7294A0?style=flat-square)
 
 **[Open live dashboard](https://kobrymoataz.github.io/repoverity/)** · [Report an issue](https://github.com/kobrymoataz/repoverity/issues) · [Contribute](CONTRIBUTING.md)
 
 RepoVerity is a free, open-source dashboard for public GitHub account and repository intelligence. Enter a username or profile URL to see transparent portfolio indicators, explore repositories, and optionally record *real observations* of follower and sampled-star growth over time. No account login or personal access token is required.
 
-## Available in V0.3
+## Available in V0.4
 
 ### Profile and repository intelligence
 
@@ -22,7 +22,7 @@ RepoVerity is a free, open-source dashboard for public GitHub account and reposi
 - Search, filter, and sort recently updated public repositories.
 - Share the selected profile using the `?user=...` URL.
 
-### Growth analytics (new)
+### Growth analytics (from V0.3)
 
 - Opt-in tracking, **separate for each GitHub username in your browser**.
 - Store up to one observation per **UTC calendar day**; a newer fetch on the same day replaces that day's observation.
@@ -59,11 +59,31 @@ npm run build
 - React 19 + TypeScript + Vite 8 + Tailwind CSS 4.
 - Public GitHub REST API (no tokens and no GitHub login).
 - In-memory API response cache (2 minutes).
-- Browser `localStorage` for growth observations and follower goals, schema `repoverity:growth:v1`.
+- Browser `localStorage` for growth observations and follower goals (`repoverity:growth:v1`) and a separate manual badge checklist (`repoverity:achievements:v1`).
 - Lightweight SVG charts without a charting service or extra runtime dependency.
 - GitHub Actions CI and GitHub Pages deployment on `main`.
 
 The GitHub unauthenticated API rate limit is typically **60 requests per hour per IP**; API errors and rate limits are displayed instead of inventing data. For retention, validation and portability details, read [Growth data and privacy](docs/GROWTH_DATA.md).
+
+## Achievement lab (V0.4)
+
+- Seven community-documented, generally obtainable GitHub Achievements with practical next steps.
+- Two clearly marked historical badges that cannot be newly earned.
+- Local per-profile checklist: not started, working, or **self-reported earned**.
+- Link to the profile's real GitHub Achievements page to confirm earned badges.
+- Transparent sample-based Starstruck signal (most starred repository from up to 100 loaded repos).
+- **RepoVerity cannot award or reliably verify GitHub badges.** Checklist status is never portrayed as authoritative.
+
+See [ACHIEVEMENTS.md](docs/ACHIEVEMENTS.md) for accuracy limits and community sources.
+
+## Contribution finder (V0.4)
+
+- On-demand searches for **open**, **unassigned**, labeled GitHub Issues.
+- Filter by repository language, `good first issue` / `help wanted`, and text search.
+- Read-only results with direct GitHub issue links and a fallback to GitHub search.
+- Anonymous GitHub Search API limits apply. No automated PRs, fake Issues, follow bots or stars.
+
+See [CONTRIBUTIONS.md](docs/CONTRIBUTIONS.md) for details and limitations.
 
 ## Deployment
 
@@ -73,8 +93,8 @@ GitHub Pages source must be **GitHub Actions**. The workflow builds with `PAGES_
 
 - **V0.1**: Foundation and responsive UI.
 - **V0.2**: Public API, repository intelligence, README, tests and Pages.
-- **V0.3**: Honest local growth tracking, charts, milestones and CSV export. **Current release.**
-- **V0.4**: Educational achievement guide and legitimate contribution discovery.
+- **V0.3**: Honest local growth tracking, charts, milestones and CSV export.
+- **V0.4**: Educational achievement guide and legitimate contribution discovery. **Current release.**
 - **V0.5**: Practical repository advice and transparent security hygiene signals.
 - **V1.0**: Stable release with refined security, accessibility, reliability and community support.
 

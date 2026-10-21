@@ -1,3 +1,24 @@
+# RepoVerity V0.4 release notes
+
+## Included
+- GitHub Achievements educational guide: seven commonly available badges plus two historical recognitions.
+- Manually confirmed, per-profile badge checklist in local browser storage; no fake award verification.
+- Real, read-only public contribution finder using GitHub's issue search API.
+- Filters for language, `good first issue` / `help wanted` and a safe text phrase.
+- Fallback links to GitHub when anonymous API searches are limited.
+- New unit tests and transparent documentation explaining badge and issue-search limitations.
+
+## Important limits
+- This release does not access private GitHub data, and cannot grant or verify official badges.
+- GitHub rate limits apply; search is on demand.
+- No automated engagement, follows, PRs, fake issues or stars.
+
+## Next
+- V0.5: repository advisor and optional structural security checks.
+- V1.0: accessibility, reliability, documentation, packaging, public launch.
+
+---
+
 # Release notes
 
 ## V0.3: Growth analytics
