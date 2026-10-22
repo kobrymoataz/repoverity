@@ -9,3 +9,8 @@ coverage/
 .idea/
 *.log
 *.local
+# Private Cloudflare deployment and OAuth local secrets
+wrangler.jsonc
+.dev.vars
+.dev.vars.*
+.wrangler/

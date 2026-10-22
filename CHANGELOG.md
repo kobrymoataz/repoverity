@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.6.0] - Prepared for release
+
+- Added optional GitHub OAuth sign-in through a same-origin Cloudflare Worker.
+- Added D1-backed workspaces, repository watchlists, display preferences and explicit account deletion.
+- Added server-side hashed sessions, secure cookie settings, state validation, scoped data queries and strict mutation guards.
+- Preserved public-only GitHub Pages and existing browser-local growth, achievement and Explorer records.
+- Added Cloudflare and GitHub OAuth setup documentation, backend tests and staged installation scripts.
+
+
 ## [1.5.0] - Prepared for release
 
 - Added a focused evidence audit workbench inside the Repository Audit view.

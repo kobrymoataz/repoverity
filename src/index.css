@@ -1033,3 +1033,51 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 @media (max-width:960px) { .ra15-toolbar-controls { grid-template-columns:1fr 1fr; }.ra15-run { grid-column:1 / -1; }.ra15-results-top { flex-direction:column; } }
 @media (max-width:600px) { .ra15-heading { flex-direction:column; }.ra15-toolbar-controls { grid-template-columns:1fr; }.ra15-run { grid-column:auto; }.ra15-toolbar,.ra15-results { padding:16px; }.ra15-summary { grid-template-columns:repeat(2,minmax(0,1fr)); }.ra15-finding { gap:10px; padding:13px; }.ra15-finding-heading { flex-wrap:wrap; }.ra15-exports { width:100%; }.ra15-exports button { flex:1; justify-content:center; } }
 @media (prefers-reduced-motion:reduce) { .ra15-spin { animation:none; } .ra15-root *, .ra15-root *::before, .ra15-root *::after { transition-duration:0.01ms !important; scroll-behavior:auto !important; } }
+
+/* V1.6 cloud workspace: quiet, evidence-oriented controls. */
+.rv-cloud { display:flex; flex-direction:column; gap:20px; color:#e1e9f1; }
+.rv-cloud-hero {display:flex;align-items:start;justify-content:space-between;gap:20px;background:#131a23;border:1px solid #303a48;border-radius:13px;padding:24px}
+.rv-cloud-hero h2 {font-size:27px;letter-spacing:-.7px;line-height:1.2;margin:8px 0 8px}
+.rv-cloud-hero p,.rv-cloud-guest p,.rv-cloud-danger p,.rv-cloud-center p {font-size:13px;line-height:1.7;color:#9baebf;max-width:650px}
+.rv-cloud-center {min-height:260px;align-items:center;text-align:center;justify-content:center;border:1px solid #303a48;border-radius:12px;background:#141b24;padding:28px}
+.rv-cloud-center h2 {font-size:20px;margin:0}
+.rv-cloud-guest {border:1px solid #303a48;border-radius:12px;background:#121a24;padding:30px;display:grid;justify-items:start;gap:12px}
+.rv-cloud-guest h3 {font-size:21px;margin:0}
+.rv-cloud-primary {display:inline-flex;align-items:center;gap:10px;padding:12px 17px;background:#c8d6ee;border-radius:7px;color:#111820;font-weight:750;text-decoration:none;font-size:13px;transition:background .15s}
+.rv-cloud-primary:hover {background:#e2ebfc}
+.rv-cloud-foot {display:flex;align-items:center;gap:8px}
+.rv-cloud-alert {background:#142b2b;border:1px solid #3b615b;border-radius:7px;padding:12px 15px;font-size:13px;color:#bedbd4}
+.rv-cloud-error {background:#352029;border-color:#764552;color:#ffd7dd}
+.rv-cloud-account {display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid #303a48;background:#141b24;border-radius:11px;padding:16px 20px}
+.rv-cloud-identity {display:flex;align-items:center;gap:12px}.rv-cloud-identity img {object-fit:cover;border-radius:9px}.rv-cloud-identity span {display:grid;gap:3px}
+.rv-cloud-identity strong {font-size:14px}.rv-cloud-identity small {font-size:11px;color:#9baebf}
+.rv-cloud-cols {display:grid;grid-template-columns:1fr 1.2fr;gap:16px}
+.rv-cloud-panel {border:1px solid #303a48;background:#131b25;border-radius:11px;padding:20px;min-width:0}
+.rv-cloud-panel-title {display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+.rv-cloud-panel-title h3 {font-size:15px;display:flex;align-items:center;gap:9px;margin:0}.rv-cloud-panel-title>span {font-size:11px;color:#9aaec0}
+.rv-cloud-tabs {display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.rv-cloud-tab {text-align:left;display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid transparent;border-radius:7px;background:transparent;color:#b5c6d5;font-size:13px;cursor:pointer}
+.rv-cloud-tab:hover {background:#1c2835}.rv-cloud-tab-active {background:#1e3043;border-color:#456078;color:#fff}
+.rv-cloud-tab span {color:#9caec1;font-size:11px}
+.rv-cloud-inline {display:flex;gap:8px;margin-top:9px;align-items:stretch}
+.rv-cloud-inline input,.rv-cloud-settings select {background:#0d151e;border:1px solid #364656;color:#ebf2f8;border-radius:7px;outline:none;padding:10px 12px;font-size:12px;min-width:0;flex:1}
+.rv-cloud-inline input:focus,.rv-cloud-settings select:focus {border-color:#94b7e2;box-shadow:0 0 0 2px #94b7e220}
+.rv-cloud-inline button {display:inline-flex;align-items:center;gap:5px;border:1px solid #4c657e;border-radius:7px;background:#26384a;color:#edf3f9;font-size:12px;padding:9px 13px;cursor:pointer}
+.rv-cloud-inline button:hover:not(:disabled) {background:#324a62}.rv-cloud-inline button:disabled,.rv-cloud-delete-link:disabled {opacity:.4;cursor:not-allowed}
+.rv-cloud-delete-link {display:flex;align-items:center;gap:7px;border:0;background:none;color:#bd9fa9;font-size:11px;margin-top:14px;cursor:pointer}
+.rv-cloud-hint,.rv-cloud-empty {font-size:11px;line-height:1.6;color:#91a3b3}
+.rv-cloud-watchlist {margin-top:14px;max-height:355px;overflow:auto;display:grid;gap:6px}
+.rv-cloud-watch {display:flex;align-items:center;justify-content:space-between;gap:10px;background:#192432;border:1px solid #2a3a4e;border-radius:7px;padding:10px}
+.rv-cloud-watch a {display:flex;align-items:center;gap:8px;color:#cbdbec;font-size:12px;text-decoration:none;word-break:break-all}
+.rv-cloud-watch button {background:none;border:none;color:#a8bac8;cursor:pointer;padding:4px}
+.rv-cloud-settings-grid {display:flex;flex-wrap:wrap;align-items:end;gap:12px}
+.rv-cloud-settings-grid label {display:grid;gap:8px;color:#acbccc;font-size:12px;min-width:175px}
+.rv-cloud-settings-grid .rv-outline-button {display:flex;align-items:center;gap:8px;font-size:12px}
+.rv-cloud-danger {border-color:#593b44}.rv-cloud-danger label {color:#d6b1bc;font-size:12px}.rv-cloud-danger-button {border-color:#935464!important;background:#57303c!important}
+.rv-visually-hidden {position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+:root[data-rv-density="compact"] .rv-cloud-tab {padding:7px 10px}
+:root[data-rv-density="compact"] .rv-cloud-watch {padding:7px 9px}
+:root[data-rv-density="compact"] .rv-cloud-panel {padding:15px}
+@media (max-width:940px) {.rv-cloud-cols {grid-template-columns:1fr}}
+@media (max-width:620px) {.rv-cloud-account {align-items:start;flex-direction:column}.rv-cloud-panel {padding:15px}.rv-cloud-inline {flex-wrap:wrap}.rv-cloud-inline input {flex-basis:100%}.rv-cloud-inline button {width:100%;justify-content:center}}
+@media (prefers-reduced-motion:reduce) {.rv-cloud-primary {transition:none}}
