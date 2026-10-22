@@ -57,3 +57,7 @@ The Repositories workspace mounts `src/components/RepositoryExplorer.tsx`, suppo
 ## V1.6 optional same-origin Cloud API
 
 The GitHub Pages build remains static and stores prior records locally. An optional Cloudflare Worker deployment combines the frontend assets and `/api/*` endpoints on one origin, with a D1 database for user workspaces, watchlists and display preferences. See [Cloud V1.6](CLOUD_V1_6.md). User OAuth tokens are only exchanged on the server for public identity and are not stored. Session tokens are stored in D1 as SHA-256 hashes and sent as secure HttpOnly cookies. No change is made to public GitHub API metrics or browser-local growth tracking.
+
+## V1.7 scheduled cloud history
+
+`migrations/0002_growth_history.sql` adds user-scoped tracking targets, real UTC daily observations and derived on-site milestone events. `worker/growth.ts` validates fixed public GitHub profile/repository URLs, bounds claims per user, performs rate-limited sequential scheduled collection and updates D1 with prepared queries. The Worker exposes authenticated `/api/v1/growth/*` endpoints and a Cloudflare `scheduled()` handler. `src/components/CloudGrowth.tsx` renders the cloud-only history UI alongside the previous browser-local Growth view, with no silent local data transfer. See [History methodology](HISTORY_V1_7.md).

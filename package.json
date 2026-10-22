@@ -1,7 +1,7 @@
 {
   "name": "repoverity",
   "private": true,
-  "version": "1.6.0",
+  "version": "1.7.0",
   "type": "module",
   "description": "Public GitHub developer workspace with accessible navigation, repository analysis and optional motion.",
   "scripts": {
@@ -20,7 +20,8 @@
     "cloud:dev": "npm run build:cloud && wrangler dev --port 8787",
     "cloud:deploy": "npm run build:cloud && wrangler deploy",
     "cloud:migrate:local": "wrangler d1 migrations apply DB --local",
-    "cloud:migrate:remote": "wrangler d1 migrations apply DB --remote"
+    "cloud:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "cloud:enable-growth-cron": "node scripts/enable-growth-cron.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
@@ -42,6 +43,6 @@
     "typescript": "^5.9.0",
     "vite": "^8.3.0",
     "vitest": "^4.0.0",
-    "wrangler": "^4.151.3"
+    "wrangler": "^4.0.0"
   }
 }
