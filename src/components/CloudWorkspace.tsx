@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import {
-  ArrowRight, Bookmark, Check, Cloud, ExternalLink, Github, LockKeyhole, Plus, RefreshCw,
+  ArrowRight, Bookmark, Cloud, ExternalLink, Github, LockKeyhole, Plus, RefreshCw,
   Settings2, ShieldCheck, Trash2, Users, X,
 } from 'lucide-react'
 import { CLOUD_ENABLED, cloudRequest, type CloudAccount, type CloudPreferences,

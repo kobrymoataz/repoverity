@@ -4,7 +4,7 @@ import { searchCommands, WORKSPACE_COMMANDS } from './commandSearch'
 describe('workspace search', () => {
   it('includes all ten available workspaces when empty', () => {
     expect(searchCommands('')).toHaveLength(10)
-    expect(new Set(WORKSPACE_COMMANDS.map(item => item.id)).size).toBe(9)
+    expect(new Set(WORKSPACE_COMMANDS.map(item => item.id)).size).toBe(10)
   })
   it('matches labels and descriptive keywords', () => {
     expect(searchCommands('starstruck').map(item => item.id)).toEqual(['achievements'])
