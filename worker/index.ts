@@ -4,6 +4,10 @@ import {
   listWorkspaces, readPreferences, removeAccount, removeWatchlist, renameWorkspace, savePreferences,
 } from './db.ts'
 import { cookieValue, loginRedirect, logout, oauthCallback, resolveUser } from './auth.ts'
+import {
+  validGrowthResource, validGrowthId, listGrowthTargets, createGrowthTarget, deleteGrowthTarget,
+  readGrowthHistory, claimManualGrowth, captureGrowth, runScheduledGrowth, MAX_GROWTH_TARGETS,
+} from './growth.ts'
 import { DEFAULT_PREFERENCES, MAX_JSON_BYTES, MAX_WATCHLIST_ITEMS, MAX_WORKSPACES,
   allowedOrigin, validFullName, validPreferences, validPublicOrigin, validWorkspaceId, validWorkspaceName } from './validation.ts'
 
@@ -55,10 +59,42 @@ async function routeApi(request:Request,env:CloudEnv, user:CloudUser|null, url:U
   const route=url.pathname
   const method=request.method.toUpperCase()
   if(route==='/api/v1/status'&&method==='GET'){
-    return reply({enabled:true,auth:'GitHub OAuth',storage:'Cloudflare D1',version:'1.6.0'})
+    return reply({enabled:true,auth:'GitHub OAuth',storage:'Cloudflare D1',version:'1.7.0'})
   }
   if(route==='/api/v1/me'&&method==='GET')return reply({user})
   if(!user)return fail('Sign in with GitHub to access your cloud workspace.',401)
+  if(route==='/api/v1/growth/targets') {
+    if(method==='GET')return reply({targets:await listGrowthTargets(env.DB,user.github_id),limit:MAX_GROWTH_TARGETS})
+    if(method==='POST'){
+      const body=await readBody(request)
+      const input=validGrowthResource(body?.kind,body?.resource)
+      if(!input)return fail('Choose a valid public GitHub username or owner/repository.')
+      const created=await createGrowthTarget(env.DB,user.github_id,input.kind,input.resource,Math.floor(Date.now()/1000))
+      return created?reply({target:created},201):fail('Already tracking this target, or the 20-target limit was reached.',409)
+    }
+    return fail('Method not allowed.',405)
+  }
+  const growthRoute=/^\/api\/v1\/growth\/targets\/([^/]+)(?:\/(history|capture))?$/.exec(route)
+  if(growthRoute){
+    const id=validGrowthId(growthRoute[1])
+    if(!id)return fail('Invalid tracked target identifier.')
+    const action=growthRoute[2]
+    if(action==='history' && method==='GET'){
+      const history=await readGrowthHistory(env.DB,user.github_id,id)
+      return history?reply({history}):fail('Tracked target not found.',404)
+    }
+    if(action==='capture' && method==='POST'){
+      const target=await claimManualGrowth(env.DB,user.github_id,id,Math.floor(Date.now()/1000))
+      if(!target)return fail('Target unavailable or manual capture cooldown is still active.',409)
+      const outcome=await captureGrowth(env.DB,env,target,Math.floor(Date.now()/1000))
+      return reply({outcome})
+    }
+    if(!action && method==='DELETE'){
+      return (await deleteGrowthTarget(env.DB,user.github_id,id))
+        ? reply({deleted:true}) : fail('Tracked target not found.',404)
+    }
+    return fail('Method not allowed.',405)
+  }
 
   if(route==='/api/v1/workspaces'&&method==='GET'){
     await ensureDefaultWorkspace(env.DB,user.github_id,Math.floor(Date.now()/1000))
@@ -159,4 +195,11 @@ export async function handleRequest(request:Request,env:CloudEnv):Promise<Respon
   }
 }
 
-export default {fetch:handleRequest}
+export default {
+  fetch:handleRequest,
+  async scheduled(controller:{scheduledTime:number;cron:string},env:CloudEnv):Promise<void> {
+    const now=Math.floor(controller.scheduledTime/1000)
+    const result=await runScheduledGrowth(env,now)
+    console.log(JSON.stringify({event:'growth_snapshot',attempted:result.attempted,success:result.success,limited:result.limited,errors:result.errors}))
+  },
+}
