@@ -14,6 +14,7 @@ export interface CloudEnv {
   APP_ORIGIN: string
   GITHUB_CLIENT_ID: string
   GITHUB_CLIENT_SECRET: string
+  GITHUB_PUBLIC_READ_TOKEN?: string
 }
 
 export type CloudUser = { github_id: number; login: string; avatar_url: string }
