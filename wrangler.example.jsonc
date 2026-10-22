@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "repoverity-cloud",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-10-22",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [{
+    "binding": "DB",
+    "database_name": "repoverity-cloud",
+    "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+  }],
+  "vars": {
+    "APP_ORIGIN": "https://REPLACE_WITH_YOUR_WORKERS_HOST",
+    "GITHUB_CLIENT_ID": "REPLACE_WITH_GITHUB_OAUTH_CLIENT_ID"
+  }
+}
