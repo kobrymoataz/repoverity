@@ -1,31 +1,30 @@
-# Privacy and local backup (V1.0)
+# RepoVerity privacy and local records
 
-RepoVerity is a static, browser-based web application. It does not operate a backend tracking database and does not ask for GitHub login credentials or personal access tokens.
+RepoVerity has two independent deployment modes. The public GitHub Pages build uses public GitHub API requests and browser-local storage without sign-in. The optional Cloudflare Worker build adds GitHub OAuth, a same-origin API and Cloudflare D1.
 
-## Network requests
-- Public profile and recent repository metadata: `https://api.github.com`.
-- Optional issue discovery: GitHub public Search API.
-- Optional advisor file-presence checks: GitHub public repository directory listing API.
-- User avatars: `avatars.githubusercontent.com` URLs returned by GitHub.
+## Public GitHub Pages
 
-GitHub and the host (GitHub Pages) may process requests according to their respective policies. RepoVerity does not operate an independent analytics collector.
+- Public profile and repository metadata are requested from GitHub.
+- Browser-local `repoverity:growth:v1` observations are created only after the user enables tracking, and only when the page is visited.
+- `repoverity:achievements:v1` contains manual, self-reported badge progress.
+- Browser-local storage and existing backup files are not automatically uploaded to the cloud.
+- The static host has no Worker Cron Trigger and cannot run background collection.
 
-## Data stored in your browser
-- `repoverity:growth:v1`: opt-in growth observations, tracked GitHub usernames and follower milestones.
-- `repoverity:achievements:v1`: manual, self-reported achievement checklist states.
+## Optional Cloudflare account
 
-The two records remain in the current browser/device unless you export them. Private/incognito mode or clearing site data can remove them. No new records are created by opening another user's shareable profile URL unless you deliberately start tracking.
+- GitHub OAuth is used to verify your identity. Access tokens are used only during login and are not saved by RepoVerity.
+- A secure, HttpOnly session cookie identifies your signed-in browser; D1 stores a hash of the session token.
+- Workspaces, repository watchlists and display preferences are saved per GitHub numeric user ID.
+- Starting with V1.7, tracking a public target is **explicit opt-in**. D1 stores the target, its public measurements, collection status and in-app milestone records.
+- Collection uses GitHub's public API. An optional Worker-only token may be configured by the site operator and must never reach browser code.
+- Scheduled collection is limited to up to 18 due targets per run. Observations are kept for up to 730 days and are not backfilled.
+- Removing a target deletes its cloud observations and milestone records. Deleting your cloud account deletes all your workspace, watchlist, preference and cloud growth rows through database foreign-key cascades.
+- No marketing emails, push alerts, automatic followers, private repository analysis, or storage of private GitHub tokens are implemented.
 
-## Portable backup
-1. Open **Privacy & portability** and choose **Export JSON backup**.
-2. Save the downloaded file securely. It contains your tracked public usernames, timestamps, personal goals and self-reported badge checklist.
-3. On another device, choose **Choose JSON backup**, review the counts, and explicitly confirm replacing the local records.
-4. Reload happens automatically after a successful import so the existing workspaces read the restored records.
+## Browser backup and deletion
 
-Backups use version `1`, are checked for supported fields, usernames and size (maximum 2.5 MB), and do not include GitHub tokens, browser cookies, unrelated storage or actual Github-issued badge verification. Badges marked "earned" are always self-reported.
+Open Data & privacy to export or import supported local backup data. Import explicitly replaces supported browser-local records after review. Deleting local data affects only RepoVerity keys in this browser. It does **not** delete your cloud account. Conversely, deleting a cloud account does not erase an exported JSON file or local browser observations.
 
-**Import replaces both existing app records.** Export the current browser data first if you need to keep it. A failed write attempts to restore the previous records. Do not upload backup files to public issues.
+GitHub, Cloudflare and your host may process requests under their own policies. Never post exported backups, GitHub access tokens, OAuth secrets, or session cookies in public issues.
 
-**Delete local data** removes only these two keys and reloads the page. It does not touch your GitHub account or unrelated site storage.
-
-For precise growth sampling and time limitations see [GROWTH_DATA.md](GROWTH_DATA.md).
+See [Cloud V1.6](CLOUD_V1_6.md), [Growth History V1.7](HISTORY_V1_7.md) and [local growth methodology](GROWTH_DATA.md).

@@ -26,3 +26,4 @@ jobs:
       - run: npm run typecheck:cloud
       - run: npm run test:cloud
       - run: npm run build:pages
+      - run: npm run build:cloud

@@ -11,6 +11,8 @@ coverage/
 *.local
 # Private Cloudflare deployment and OAuth local secrets
 wrangler.jsonc
+wrangler.jsonc.growth-backup
+wrangler.jsonc.growth-next
 .dev.vars
 .dev.vars.*
 .wrangler/

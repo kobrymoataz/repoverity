@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.7.0] - Prepared for release
+
+- Added opt-in D1-backed growth history for public GitHub profiles and repositories.
+- Added a daily Cloudflare Worker Cron Trigger, with bounded batch size and GitHub rate-limit handling.
+- Added real observed follower, Star, fork, and public repository count snapshots, with no historical backfill.
+- Added threshold-crossing milestones, CSV export, manual capture cooldown and full target deletion.
+- Preserved browser-local history and public GitHub Pages behavior.
+- Added backend integration tests, migration and Cloudflare setup documentation.
+
 ## [1.6.0] - Prepared for release
 
 - Added optional GitHub OAuth sign-in through a same-origin Cloudflare Worker.

@@ -14,6 +14,7 @@
     "database_name": "repoverity-cloud",
     "database_id": "REPLACE_WITH_YOUR_D1_DATABASE_ID"
   }],
+  "triggers": { "crons": ["15 7 * * *"] },
   "vars": {
     "APP_ORIGIN": "https://REPLACE_WITH_YOUR_WORKERS_HOST",
     "GITHUB_CLIENT_ID": "REPLACE_WITH_GITHUB_OAUTH_CLIENT_ID"

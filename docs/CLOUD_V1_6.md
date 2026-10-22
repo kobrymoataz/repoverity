@@ -114,3 +114,7 @@ Cloudflare Workers and D1 have free and paid allowances, usage limits and storag
 - [Cloudflare D1 migrations](https://developers.cloudflare.com/workers/wrangler/commands/d1/)
 - [Cloudflare Worker secrets](https://developers.cloudflare.com/workers/configuration/secrets/)
 - [GitHub OAuth authorization flow](https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps)
+
+## V1.7 extension
+
+After upgrading this project to V1.7, run `npm run cloud:migrate:remote`, configure the UTC Cron Trigger with `node scripts/enable-growth-cron.mjs` and redeploy. The migration adds explicit opt-in growth tables; no V1.6 watchlist becomes a tracking target automatically. See [V1.7 Historical Growth Intelligence](HISTORY_V1_7.md).
