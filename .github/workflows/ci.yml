@@ -23,4 +23,6 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run lint:text
+      - run: npm run typecheck:cloud
+      - run: npm run test:cloud
       - run: npm run build:pages

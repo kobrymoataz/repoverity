@@ -52,3 +52,8 @@ The Repositories workspace mounts `src/components/RepositoryExplorer.tsx`, suppo
 - README and one recognized root manifest are decoded from GitHub Contents base64 payloads using bounded UTF-8 conversion. No arbitrary source files are scanned.
 - Workflow counts and up to ten recent runs are samples across GitHub Actions, not a CI health certification.
 - All data remains in temporary browser memory, with an eight-minute capped cache; reports are exported only by user request. No new stored data or authentication tokens.
+
+
+## V1.6 optional same-origin Cloud API
+
+The GitHub Pages build remains static and stores prior records locally. An optional Cloudflare Worker deployment combines the frontend assets and `/api/*` endpoints on one origin, with a D1 database for user workspaces, watchlists and display preferences. See [Cloud V1.6](CLOUD_V1_6.md). User OAuth tokens are only exchanged on the server for public identity and are not stored. Session tokens are stored in D1 as SHA-256 hashes and sent as secure HttpOnly cookies. No change is made to public GitHub API metrics or browser-local growth tracking.
