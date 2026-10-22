@@ -10,6 +10,7 @@ import {
 import { useGithubProfile } from './hooks/useGithubProfile'
 import { useGrowthHistory } from './hooks/useGrowthHistory'
 import { useMotionPreference } from './hooks/useMotionPreference'
+import { CLOUD_ENABLED } from './lib/cloudApi'
 import { OverviewReveal } from './components/OverviewReveal'
 import { CommandPalette } from './components/CommandPalette'
 import { MOTION_TIMING } from './lib/motionPreferences'
@@ -28,6 +29,7 @@ const ContributionFinder = lazy(() => import('./components/ContributionFinder').
 const RepositoryAuditPro = lazy(() => import('./components/RepositoryAuditPro').then(m => ({ default: m.RepositoryAuditPro })))
 const DataPortability = lazy(() => import('./components/DataPortability').then(m => ({ default: m.DataPortability })))
 const CloudWorkspace = lazy(() => import('./components/CloudWorkspace').then(m => ({ default: m.CloudWorkspace })))
+const CloudGrowth = lazy(() => import('./components/CloudGrowth').then(m => ({ default: m.CloudGrowth })))
 
 const REPOSITORY_URL = 'https://github.com/kobrymoataz/repoverity'
 
@@ -55,7 +57,7 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
   overview: { title: 'Overview', subtitle: 'Public GitHub data, organized for a closer look.', category: 'WORKSPACE' },
   repositories: { title: 'Repositories', subtitle: 'Explore public repositories with pagination, comparison and saved views.', category: 'EXPLORE' },
   analytics: { title: 'Analytics Pro', subtitle: 'Compare profiles, explore public activity and understand repository signals.', category: 'ANALYZE' },
-  growth: { title: 'Growth history', subtitle: 'Follow changes in recorded observations, not estimated history.', category: 'TRACK' },
+  growth: { title: 'Growth history', subtitle: 'Measured local history and optional scheduled cloud observations.', category: 'TRACK' },
   advisor: { title: 'Repository audit', subtitle: 'Inspect public evidence, review maintainability signals and plan improvements.', category: 'IMPROVE' },
   contributions: { title: 'Find contributions', subtitle: 'Discover open issues that welcome contributors.', category: 'CONTRIBUTE' },
   achievements: { title: 'Achievements', subtitle: 'Track GitHub achievement criteria and your own progress.', category: 'LEARN' },
@@ -67,7 +69,7 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
 function Brand() {
   return <a className="rv-brand" href={workspaceHref('overview')} aria-label="RepoVerity home">
     <span className="rv-brand-icon"><GitBranch size={19} strokeWidth={2.15}/></span>
-    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.6</span></span>
+    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.7</span></span>
   </a>
 }
 
@@ -352,6 +354,10 @@ function App() {
           <GrowthAnalytics username={snapshot.user.login} currentFollowers={snapshot.user.followers} currentSampleStars={insights.stars} profile={growth.profile} enabled={growth.enabled} storageError={growth.storageError} limitReached={growth.limitReached} onToggle={growth.toggleTracking} onGoal={growth.updateGoal} onRefresh={retry} onClear={growth.clearHistory} reducedMotion={animation.reduceMotion}/>
         </Suspense></div>}
 
+        {active === 'growth' && CLOUD_ENABLED && <div className="rv-view rv-feature-page rv-growth-page"><Suspense fallback={<AsyncFallback title="Cloud growth history"/>}>
+          <CloudGrowth defaultUsername={snapshot?.user.login ?? username}/>
+        </Suspense></div>}
+
         {active === 'achievements' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Achievements"/>}><AchievementLab username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}
         {active === 'advisor' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Repository audit"/>}><RepositoryAuditPro key={`${snapshot.user.id}-${snapshot.fetchedAt}`} username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}
         {active === 'contributions' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Contribution finder"/>}><ContributionFinder/></Suspense></div>}
@@ -360,7 +366,7 @@ function App() {
         {active === 'about' && <div className="rv-view"><AboutView/></div>}
 
         </motion.div></AnimatePresence>
-        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.6</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
+        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.7</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
       </main>
     </div>
   </div></MotionConfig>
