@@ -1,0 +1,22 @@
+# Example only. Do not copy to .github/workflows until the v1.9.0 tag exists.
+name: RepoVerity public audit
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '45 8 * * 1'
+permissions:
+  contents: read
+jobs:
+  evidence-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scan public repository
+        id: audit
+        uses: kobrymoataz/repoverity@v1.9.0
+        with:
+          repository: ${{ github.repository }}
+          github_token: ${{ github.token }}
+          include_runs: 'true'
+          fail_on_review: 'false'
+      - name: Show report location
+        run: echo "Report at ${{ steps.audit.outputs.report_path }}"
