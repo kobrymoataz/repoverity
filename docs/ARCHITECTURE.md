@@ -61,3 +61,7 @@ The GitHub Pages build remains static and stores prior records locally. An optio
 ## V1.7 scheduled cloud history
 
 `migrations/0002_growth_history.sql` adds user-scoped tracking targets, real UTC daily observations and derived on-site milestone events. `worker/growth.ts` validates fixed public GitHub profile/repository URLs, bounds claims per user, performs rate-limited sequential scheduled collection and updates D1 with prepared queries. The Worker exposes authenticated `/api/v1/growth/*` endpoints and a Cloudflare `scheduled()` handler. `src/components/CloudGrowth.tsx` renders the cloud-only history UI alongside the previous browser-local Growth view, with no silent local data transfer. See [History methodology](HISTORY_V1_7.md).
+
+## V1.8 personal maintainer desk
+
+The `#/maintainers` workspace lazy-loads `src/components/MaintainerWorkspace.tsx`. `src/lib/maintainerGithub.ts` calls only three bounded public GitHub endpoints, returning separate unavailable states and filtering GitHub PR entries out of the Issues endpoint. `src/lib/maintainer.ts` contains deterministic filtering, normalized repository and worklist keys, local storage guards and safe CSV export. `src/lib/maintainerCloud.ts` delegates private saves to the existing same-origin Cloud API only when sign-in is available. `migrations/0003_maintainer_queue.sql` and `worker/maintainerQueue.ts` add private, user-owned D1 records that never mutate GitHub. See [Maintainer V1.8](MAINTAINER_V1_8.md).

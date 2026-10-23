@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.8.0] - Prepared for release
+
+- Added a public maintainer desk for issue and PR triage, contributor samples and bounded pagination.
+- Added search, label and inactivity filters and a personal four-stage queue with private notes and safe CSV export.
+- Added optional per-user cloud queue storage, strict validation, CSRF checks, and account deletion cascade.
+- Preserved anonymous GitHub Pages usage and existing cloud growth and workspace behavior.
+- Added frontend, API and cloud database tests with explicit rate-limit reporting.
+
 ## [1.7.0] - Prepared for release
 
 - Added opt-in D1-backed growth history for public GitHub profiles and repositories.

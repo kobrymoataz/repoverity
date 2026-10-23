@@ -4,6 +4,7 @@ import {
   listWorkspaces, readPreferences, removeAccount, removeWatchlist, renameWorkspace, savePreferences,
 } from './db.ts'
 import { cookieValue, loginRedirect, logout, oauthCallback, resolveUser } from './auth.ts'
+import { listQueue, upsertQueue, removeQueue, validateQueueFields, validateQueueIdentity, MAX_QUEUE_RECORDS } from './maintainerQueue.ts'
 import {
   validGrowthResource, validGrowthId, listGrowthTargets, createGrowthTarget, deleteGrowthTarget,
   readGrowthHistory, claimManualGrowth, captureGrowth, runScheduledGrowth, MAX_GROWTH_TARGETS,
@@ -59,10 +60,33 @@ async function routeApi(request:Request,env:CloudEnv, user:CloudUser|null, url:U
   const route=url.pathname
   const method=request.method.toUpperCase()
   if(route==='/api/v1/status'&&method==='GET'){
-    return reply({enabled:true,auth:'GitHub OAuth',storage:'Cloudflare D1',version:'1.7.0'})
+    return reply({enabled:true,auth:'GitHub OAuth',storage:'Cloudflare D1',version:'1.8.0'})
   }
   if(route==='/api/v1/me'&&method==='GET')return reply({user})
   if(!user)return fail('Sign in with GitHub to access your cloud workspace.',401)
+  // Private personal triage planning. No write access to GitHub is requested.
+  if(route==='/api/v1/maintainer/queue') {
+    if(method==='GET') {
+      const repo=validFullName(url.searchParams.get('repo'))?.toLowerCase()
+      if(!repo)return fail('Provide a valid public owner/repository.')
+      return reply({entries:await listQueue(env.DB,user.github_id,repo),limit:MAX_QUEUE_RECORDS})
+    }
+    if(method==='POST') {
+      const body=await readBody(request)
+      const item=validateQueueFields(body)
+      if(!item)return fail('Invalid issue reference, stage, or note.')
+      const saved=await upsertQueue(env.DB,user.github_id,item,Math.floor(Date.now()/1000))
+      return saved?reply({saved:true}):fail('Personal triage queue limit reached.',409)
+    }
+    if(method==='DELETE') {
+      const body=await readBody(request)
+      const item=validateQueueIdentity({repo:body?.repo,kind:body?.kind,number:body?.number})
+      if(!item)return fail('Invalid issue reference.')
+      const removed=await removeQueue(env.DB,user.github_id,item)
+      return removed?reply({deleted:true}):fail('Item not found.',404)
+    }
+    return fail('Method not allowed.',405)
+  }
   if(route==='/api/v1/growth/targets') {
     if(method==='GET')return reply({targets:await listGrowthTargets(env.DB,user.github_id),limit:MAX_GROWTH_TARGETS})
     if(method==='POST'){

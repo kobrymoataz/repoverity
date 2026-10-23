@@ -30,6 +30,7 @@ const RepositoryAuditPro = lazy(() => import('./components/RepositoryAuditPro').
 const DataPortability = lazy(() => import('./components/DataPortability').then(m => ({ default: m.DataPortability })))
 const CloudWorkspace = lazy(() => import('./components/CloudWorkspace').then(m => ({ default: m.CloudWorkspace })))
 const CloudGrowth = lazy(() => import('./components/CloudGrowth').then(m => ({ default: m.CloudGrowth })))
+const MaintainerWorkspace = lazy(() => import('./components/MaintainerWorkspace').then(m => ({ default: m.MaintainerWorkspace })))
 
 const REPOSITORY_URL = 'https://github.com/kobrymoataz/repoverity'
 
@@ -44,6 +45,7 @@ const navigation: { label: string; items: NavItem[] }[] = [
   { label: 'DEVELOPER TOOLS', items: [
     { id: 'advisor', label: 'Repository audit', icon: FileCheck2 },
     { id: 'contributions', label: 'Find contributions', icon: Compass },
+    { id: 'maintainers', label: 'Maintainer desk', icon: Users },
     { id: 'achievements', label: 'Achievements', icon: Award },
   ] },
   { label: 'PROJECT', items: [
@@ -59,6 +61,7 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
   analytics: { title: 'Analytics Pro', subtitle: 'Compare profiles, explore public activity and understand repository signals.', category: 'ANALYZE' },
   growth: { title: 'Growth history', subtitle: 'Measured local history and optional scheduled cloud observations.', category: 'TRACK' },
   advisor: { title: 'Repository audit', subtitle: 'Inspect public evidence, review maintainability signals and plan improvements.', category: 'IMPROVE' },
+  maintainers: { title: 'Maintainer desk', subtitle: 'Review public issues, pull requests and contributors, then plan a private triage queue.', category: 'COLLABORATE' },
   contributions: { title: 'Find contributions', subtitle: 'Discover open issues that welcome contributors.', category: 'CONTRIBUTE' },
   achievements: { title: 'Achievements', subtitle: 'Track GitHub achievement criteria and your own progress.', category: 'LEARN' },
   cloud: { title: 'Cloud workspaces', subtitle: 'Optional GitHub login and synced workspace preferences.', category: 'ACCOUNT' },
@@ -69,7 +72,7 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
 function Brand() {
   return <a className="rv-brand" href={workspaceHref('overview')} aria-label="RepoVerity home">
     <span className="rv-brand-icon"><GitBranch size={19} strokeWidth={2.15}/></span>
-    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.7</span></span>
+    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.8</span></span>
   </a>
 }
 
@@ -323,8 +326,8 @@ function App() {
         <SectionIntro view={active} action={isLoaded ? <button type="button" className="rv-outline-button" onClick={copyShareLink}>{copied ? <Check size={16}/> : <Copy size={16}/>} {copied ? 'Link copied' : 'Share view'}</button> : undefined}/>
         {active !== 'cloud' && <div className="rv-top-search"><AccountSearch value={draftUsername} setValue={value=>{setDraftUsername(value);setValidationMessage(null)}} onSubmit={onSubmit} error={validationMessage} busy={status==='loading'} inputRef={searchInputRef}/><div className="rv-top-search-footer"><span>Public GitHub accounts only. No authorization required.</span><span>Press <kbd>/</kbd> to focus search</span></div></div>}
 
-        {active !== 'cloud' && active !== 'privacy' && active !== 'about' && active !== 'contributions' && status === 'loading' && <LoadingProfile/>}
-        {active !== 'cloud' && active !== 'privacy' && active !== 'about' && active !== 'contributions' && status === 'error' && <ErrorProfile message={error} retry={retry}/>}
+        {active !== 'cloud' && active !== 'privacy' && active !== 'about' && active !== 'contributions' && active !== 'maintainers' && status === 'loading' && <LoadingProfile/>}
+        {active !== 'cloud' && active !== 'privacy' && active !== 'about' && active !== 'contributions' && active !== 'maintainers' && status === 'error' && <ErrorProfile message={error} retry={retry}/>}
 
         {active === 'overview' && isLoaded && <OverviewReveal key={`overview-${snapshot.user.id}`} reduced={animation.reduceMotion}>
           <div className="rv-view rv-overview-view">
@@ -360,6 +363,7 @@ function App() {
 
         {active === 'achievements' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Achievements"/>}><AchievementLab username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}
         {active === 'advisor' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Repository audit"/>}><RepositoryAuditPro key={`${snapshot.user.id}-${snapshot.fetchedAt}`} username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}
+        {active === 'maintainers' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Maintainer desk"/>}><MaintainerWorkspace defaultRepo={snapshot?.repositories[0]?.full_name ?? 'kobrymoataz/repoverity'} suggestedRepos={snapshot?.repositories.map(x=>x.full_name) ?? []}/></Suspense></div>}
         {active === 'contributions' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Contribution finder"/>}><ContributionFinder/></Suspense></div>}
         {active === 'cloud' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Cloud workspaces"/>}><CloudWorkspace/></Suspense></div>}
         {active === 'privacy' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Data management"/>}><DataPortability/></Suspense></div>}
