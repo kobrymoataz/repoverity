@@ -28,3 +28,7 @@ Open Data & privacy to export or import supported local backup data. Import expl
 GitHub, Cloudflare and your host may process requests under their own policies. Never post exported backups, GitHub access tokens, OAuth secrets, or session cookies in public issues.
 
 See [Cloud V1.6](CLOUD_V1_6.md), [Growth History V1.7](HISTORY_V1_7.md) and [local growth methodology](GROWTH_DATA.md).
+
+## V1.8 personal maintainer notes
+
+The new Maintainer desk saves personal triage stages, issue/PR references and notes either in device local storage or, after signing into a configured Cloudflare deployment, in user-scoped D1 records. Notes are not posted to GitHub or shared with other users. They are not included in the original browser JSON backup. Cloud deletion cascades to all associated personal queue records; local notes must be cleared separately. See [Maintainer V1.8](MAINTAINER_V1_8.md).
