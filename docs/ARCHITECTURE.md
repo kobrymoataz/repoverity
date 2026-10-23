@@ -65,3 +65,9 @@ The GitHub Pages build remains static and stores prior records locally. An optio
 ## V1.8 personal maintainer desk
 
 The `#/maintainers` workspace lazy-loads `src/components/MaintainerWorkspace.tsx`. `src/lib/maintainerGithub.ts` calls only three bounded public GitHub endpoints, returning separate unavailable states and filtering GitHub PR entries out of the Issues endpoint. `src/lib/maintainer.ts` contains deterministic filtering, normalized repository and worklist keys, local storage guards and safe CSV export. `src/lib/maintainerCloud.ts` delegates private saves to the existing same-origin Cloud API only when sign-in is available. `migrations/0003_maintainer_queue.sql` and `worker/maintainerQueue.ts` add private, user-owned D1 records that never mutate GitHub. See [Maintainer V1.8](MAINTAINER_V1_8.md).
+
+## V1.9 shared developer-tool engine
+
+`src/lib/scanCore.mjs` is a bounded, read-only GitHub REST scanning core imported both by the browser and the standalone Node CLI / action. The `scanCore.d.mts` file declares types for React and TypeScript. The UI component `src/components/DeveloperTools.tsx` uses the same parser and formatting functions as `tools/cli.mjs` and `action/index.mjs`. No D1 migrations, OAuth scope changes, or repository write actions were added.
+
+For limits and rollout, see [V1.9 Developer Tools](TOOLS_V1_9.md).
