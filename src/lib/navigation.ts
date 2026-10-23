@@ -1,7 +1,7 @@
 /** Lightweight hash routing keeps project-hosted GitHub Pages refresh-safe. */
 export const WORKSPACE_IDS = [
   'overview', 'repositories', 'analytics', 'growth', 'achievements',
-  'contributions', 'advisor', 'maintainers', 'cloud', 'privacy', 'about',
+  'contributions', 'advisor', 'maintainers', 'tools', 'cloud', 'privacy', 'about',
 ] as const
 
 export type WorkspaceId = typeof WORKSPACE_IDS[number]

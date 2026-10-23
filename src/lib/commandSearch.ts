@@ -16,6 +16,7 @@ export const WORKSPACE_COMMANDS: CommandItem[] = [
   { id: 'contributions', label: 'Find contributions', category: 'Developer tools', keywords: 'issues open source good first issue help wanted' },
   { id: 'achievements', label: 'Achievements', category: 'Developer tools', keywords: 'badges pull shark starstruck goals' },
   { id: 'maintainers', label: 'Maintainer desk', category: 'Developer tools', keywords: 'issues pull requests review contributors triage priority queue team community' },
+  { id: 'tools', label: 'Developer tools', category: 'Developer tools', keywords: 'cli terminal report export markdown html pdf csv json github actions integrations' },
   { id: 'cloud', label: 'Cloud workspaces', category: 'Workspace', keywords: 'cloud login github oauth sync watchlist saved workspace' },
   { id: 'privacy', label: 'Data & privacy', category: 'Project', keywords: 'backup export import delete json preferences' },
   { id: 'about', label: 'About RepoVerity', category: 'Project', keywords: 'source license methodology documentation' },

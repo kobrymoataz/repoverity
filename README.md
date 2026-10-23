@@ -8,7 +8,7 @@
 
 [Live application](https://kobrymoataz.github.io/repoverity/) | [Source](https://github.com/kobrymoataz/repoverity) | [Issues](https://github.com/kobrymoataz/repoverity/issues) | [Contributing](CONTRIBUTING.md)
 
-RepoVerity turns public GitHub metadata into a structured, read-only developer workspace. V1.1 replaced the long dashboard with focused workspaces. V1.2 added restrained motion and a keyboard-first quick switch. V1.3 added Repository Explorer Pro with on-demand pagination, comparisons and saved views. V1.4 added developer analytics, public profile comparisons and optional activity inspection. V1.5 adds an evidence-based repository audit workbench with public file, workflow and documentation checks. V1.6 adds optional same-origin cloud workspaces using GitHub OAuth, Cloudflare Workers and D1. V1.7 adds opt-in scheduled public profile and repository snapshots for cloud users, with measured charts and on-site milestones. V1.8 introduces a public maintainer desk and private planning queues with optional per-user cloud syncing. Public GitHub Pages remains available without sign-in.
+RepoVerity turns public GitHub metadata into a structured, read-only developer workspace. V1.1 replaced the long dashboard with focused workspaces. V1.2 added restrained motion and a keyboard-first quick switch. V1.3 added Repository Explorer Pro with on-demand pagination, comparisons and saved views. V1.4 added developer analytics, public profile comparisons and optional activity inspection. V1.5 adds an evidence-based repository audit workbench with public file, workflow and documentation checks. V1.6 adds optional same-origin cloud workspaces using GitHub OAuth, Cloudflare Workers and D1. V1.7 adds opt-in scheduled public profile and repository snapshots for cloud users, with measured charts and on-site milestones. V1.8 introduces a public maintainer desk and private planning queues with optional per-user cloud syncing. V1.9 adds a public evidence report engine shared by the web, CLI, and optional GitHub Action. Public GitHub Pages remains available without sign-in.
 
 ## Workspaces
 
@@ -19,6 +19,7 @@ RepoVerity turns public GitHub metadata into a structured, read-only developer w
 | Analytics Pro | Latest-push distribution, portfolio sampling, second-profile comparisons and on-demand contributor, release, issue and PR views |
 | Growth history | Local browser observations, plus optional cloud-backed profile and repository readings with measured charts, in-app milestones and CSV export |
 | Repository audit | Evidence Audit 2.0 for README, community files, workflow activity and a root manifest; previous metadata advisor remains available |
+| Developer tools | Unified public evidence scanner with CLI, GitHub Action, JSON/CSV/Markdown/HTML exports and print-to-PDF support |
 | Maintainer desk | Read public issues and pull requests, inspect contributors and plan personal follow-ups with private notes and CSV export |
 | Find contributions | Open and unassigned issues labeled by maintainers |
 | Achievements | Educational requirements and a manual progress checklist |
@@ -37,6 +38,7 @@ RepoVerity turns public GitHub metadata into a structured, read-only developer w
 - Additional GitHub API pagination is manual and anonymous rate limits still apply.
 - V1.7 cloud records include only explicitly tracked public targets, their measured snapshots and on-site milestones, alongside V1.6 workspaces, watchlists and preferences. Earlier browser-local history, achievements and Explorer presets are not uploaded.
 - V1.8 triage notes are personal and do not edit GitHub issues, pull requests or repository permissions. The local queue is separate from the older JSON backup, and the optional cloud queue requires a configured Worker and D1 migration.
+- V1.9 checks recognized public evidence, not source-code security. Only up to 3 or 4 requests are used per scan. Its optional GitHub Action is advisory by default and requires a version tag before external workflows can reference it. HTML reports can be printed to PDF; the CLI does not create binary PDF directly.
 - No automated followers, stars or other artificial engagement is provided.
 
 ## Run locally
@@ -57,11 +59,16 @@ Open `http://127.0.0.1:5173/`.
 ```bash
 npm run typecheck
 npm test
+npm run test:toolkit
 npm run lint:text
 npm run build:pages
 ```
 
 The Pages build verifies that output paths use `/repoverity/` and point to compiled files. GitHub Pages must use **GitHub Actions** as the source. The hosted app is available at [kobrymoataz.github.io/repoverity](https://kobrymoataz.github.io/repoverity/).
+
+## RepoVerity CLI and GitHub Action
+
+Run `node tools/cli.mjs --help` for a read-only public evidence report. The report engine is shared with the Developer Tools workspace at `#/tools` and the optional Node 24 GitHub Action. See [V1.9 Developer Tools](docs/TOOLS_V1_9.md) for examples, limitations, and tag publication requirements.
 
 ## Optional Cloudflare deployment
 

@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.9.0] - Prepared for release
+
+- Added a shared read-only public GitHub evidence scanner for the web, CLI, and GitHub Actions.
+- Added a Developer Tools workspace with explanatory findings, scoped evidence and four report formats.
+- Added Node.js CLI, GitHub Action with advisory default, optional gating, JSON output and workflow summary.
+- Included a manual integration example, 16 deterministic tests, and explicit API and scope limits.
+- Preserved V1.8 data, Cloudflare configuration and existing navigation with no dependency upgrade.
+
 ## [1.8.0] - Prepared for release
 
 - Added a public maintainer desk for issue and PR triage, contributor samples and bounded pagination.

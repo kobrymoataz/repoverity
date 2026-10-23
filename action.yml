@@ -1,0 +1,37 @@
+name: RepoVerity Public Repository Audit
+description: Read-only evidence report for public GitHub repositories. No vulnerability scanning or repository mutations.
+author: RepoVerity
+branding:
+  icon: check-circle
+  color: blue
+inputs:
+  repository:
+    description: Public owner/repository to inspect. Defaults to the current repository.
+    required: false
+    default: ''
+  github_token:
+    description: Optional GitHub token with read-only permission. Never saved.
+    required: false
+    default: ''
+  include_runs:
+    description: Check up to ten recent Actions runs.
+    required: false
+    default: 'false'
+  fail_on_review:
+    description: Fail job if any review findings exist. Default is advisory only.
+    required: false
+    default: 'false'
+  output_path:
+    description: JSON report path relative to GITHUB_WORKSPACE.
+    required: false
+    default: repoverity-report.json
+outputs:
+  review_count:
+    description: Number of findings requiring review.
+  unknown_count:
+    description: Number of unavailable evidence checks.
+  report_path:
+    description: Saved JSON report file path.
+runs:
+  using: node24
+  main: action/index.mjs
