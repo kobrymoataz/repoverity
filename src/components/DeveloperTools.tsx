@@ -1,3 +1,4 @@
+import { ActionWizard } from './ActionWizard'
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { AlertCircle, ArrowRight, ArrowUpRight, CheckCircle2, ClipboardCopy, Code2, Download, FileText, Github, LoaderCircle, RefreshCw, ShieldCheck, Terminal, Workflow, X } from 'lucide-react'
 import { normalizeRepository, reportOutput, scanRepository, type AuditReport } from '../lib/scanCore.mjs'
@@ -21,7 +22,7 @@ function exportFile(report: AuditReport, format: ExportFormat) {
   window.setTimeout(() => URL.revokeObjectURL(link), 1000)
 }
 
-const yaml = `# Available after the v1.9.0 Git tag has been published.
+const yaml = `# Uses the published RepoVerity v1.9.0 Action tag.
 name: RepoVerity evidence audit
 on:
   workflow_dispatch:
@@ -73,7 +74,7 @@ export function DeveloperTools({ defaultRepository }: { defaultRepository: strin
   }
   return <div className="rv-dtools">
     <header className="rv-dtools-hero">
-      <div className="rv-dtools-hero-title"><span className="rv-dtools-icon"><Terminal size={23}/></span><div><span className="rv-kicker">DEVELOPER WORKBENCH / V1.9</span><h2>One report. Three workflows.</h2><p>Scan public evidence in RepoVerity, from Terminal, or in GitHub Actions. The same checks and export formats power all three.</p></div></div>
+      <div className="rv-dtools-hero-title"><span className="rv-dtools-icon"><Terminal size={23}/></span><div><span className="rv-kicker">DEVELOPER WORKBENCH / V2.1</span><h2>One report. Three workflows.</h2><p>Scan public evidence in RepoVerity, from Terminal, or in GitHub Actions. The same checks and export formats power all three.</p></div></div>
       <span className="rv-dtools-readonly"><ShieldCheck size={15}/> READ ONLY</span>
     </header>
     <section className="rv-dtools-card" aria-label="Public repository evidence audit">
@@ -96,8 +97,9 @@ export function DeveloperTools({ defaultRepository }: { defaultRepository: strin
     </section>
     <div className="rv-dtools-integrations">
       <section className="rv-dtools-card"><div className="rv-dtools-card-top"><div><span className="rv-kicker">INTEGRATION 01</span><h3><Terminal size={19}/> RepoVerity CLI</h3><p>Run the same checks locally with Node.js 22 or newer. Exports Markdown, JSON, CSV and HTML.</p></div></div><div className="rv-dtools-code"><code>{cliText}</code><button type="button" aria-label="Copy CLI command" onClick={() => void copy('cli')}><ClipboardCopy size={16}/></button></div><p className="rv-dtools-hint">Use <code>--fail-on-review</code> to opt into an exit code of 2 when review findings exist.</p>{copied==='cli' && <span className="rv-dtools-copied">Command copied.</span>}</section>
-      <section className="rv-dtools-card"><div className="rv-dtools-card-top"><div><span className="rv-kicker">INTEGRATION 02</span><h3><Workflow size={19}/> GitHub Actions</h3><p>Advisory by default. Produces a JSON artifact-ready file and a workflow job summary.</p></div></div><div className="rv-dtools-code rv-dtools-code-block"><pre>{yaml}</pre><button type="button" aria-label="Copy GitHub Action workflow" onClick={() => void copy('action')}><ClipboardCopy size={16}/></button></div><p className="rv-dtools-hint">The remote action reference becomes usable only after publishing the <code>v1.9.0</code> Git tag. Grant contents: read permission.</p>{copied==='action' && <span className="rv-dtools-copied">Workflow copied.</span>}</section>
+      <section className="rv-dtools-card"><div className="rv-dtools-card-top"><div><span className="rv-kicker">INTEGRATION 02</span><h3><Workflow size={19}/> GitHub Actions</h3><p>Advisory by default. Produces a JSON artifact-ready file and a workflow job summary.</p></div></div><div className="rv-dtools-code rv-dtools-code-block"><pre>{yaml}</pre><button type="button" aria-label="Copy GitHub Action workflow" onClick={() => void copy('action')}><ClipboardCopy size={16}/></button></div><p className="rv-dtools-hint">The v1.9.0 tag is published. Grant contents: read; use the builder below for custom options.</p>{copied==='action' && <span className="rv-dtools-copied">Workflow copied.</span>}</section>
     </div>
+    <ActionWizard defaultRepository={defaultRepository}/>
     <footer className="rv-dtools-footer"><FileText size={15}/> Reports summarize public GitHub metadata and recognized files. They cannot establish project security, compliance, or overall software quality. <a href="https://github.com/kobrymoataz/repoverity" target="_blank" rel="noopener noreferrer">Open source <ArrowRight size={14}/></a></footer>
   </div>
 }
