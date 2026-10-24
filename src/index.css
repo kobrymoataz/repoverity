@@ -1302,3 +1302,19 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .rv-launch-footer svg{flex:none;margin-top:3px}.rv-launch-footer p{margin:0}.rv-launch-footer a{display:inline-flex;align-items:center;gap:4px;color:#b9d8ec}
 @media(max-width:720px){.rv-launch-hero{flex-direction:column;padding:17px}.rv-launch-summary{grid-template-columns:1fr}.rv-launch-summary>div{padding:13px 15px}.rv-launch-panel{padding:16px}.rv-launch-findings li{grid-template-columns:1fr 20px}.rv-launch-status{grid-column:1/-1}.rv-launch-findings li>div{grid-column:1}.rv-launch-findings li>a{grid-column:2;grid-row:2}}
 @media(prefers-reduced-motion:reduce){.rv-launch-spin{animation:none}}
+
+/* V2.1 workflow builder */
+.rv-action-wizard { margin-top: 26px; }
+.rv-action-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 20px 0; }
+.rv-action-controls > label { color: var(--muted, #a8aab9); display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; font-weight: 600; min-width: 0; }
+.rv-action-controls select, .rv-action-controls input:not([type=checkbox]) { width: 100%; min-width: 0; color: inherit; background: var(--panel, #141922); border: 1px solid rgba(139, 158, 178, 0.4); border-radius: 10px; padding: 12px; font: inherit; }
+.rv-action-controls select:focus-visible, .rv-action-controls input:focus-visible { outline: 2px solid #80b5ff; outline-offset: 3px; }
+.rv-action-toggles { display: flex; flex-direction: column; gap: 12px; grid-column: 1 / -1; }
+.rv-action-toggles label { display: flex; align-items: center; gap: 10px; cursor: pointer; font-size: 0.89rem; }
+.rv-action-toggles input { accent-color: #7b9ff7; width: 17px; height: 17px; }
+.rv-action-buttons { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+.rv-action-preview { margin-top: 20px; max-height: 420px; overflow: auto; }
+.rv-action-preview pre { white-space: pre; tab-size: 2; overflow: visible; }
+.rv-action-feedback { color: #74c6a1; display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+.rv-action-warning { color: #f0ba74; display: flex; gap: 8px; align-items: center; margin: 10px 0; }
+@media (max-width: 760px) { .rv-action-controls { grid-template-columns: 1fr; } .rv-action-buttons > button { flex: 1 1 140px; } }
