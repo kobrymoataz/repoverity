@@ -11,7 +11,7 @@
     "test": "vitest run src",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
-    "build:pages": "PAGES_BASE=/repoverity/ npm run build && npm run verify:pages",
+    "build:pages": "PAGES_BASE=/repoverity/ npm run build && npm run verify:pages && npm run verify:bundle",
     "verify:pages": "node scripts/verify-pages.mjs dist /repoverity/",
     "lint:text": "node scripts/check-no-emdash.mjs",
     "typecheck:cloud": "tsc -p tsconfig.worker.json --noEmit",
@@ -23,7 +23,10 @@
     "cloud:migrate:remote": "wrangler d1 migrations apply DB --remote",
     "cloud:enable-growth-cron": "node scripts/enable-growth-cron.mjs",
     "test:toolkit": "node --test tools/tests/*.test.mjs",
-    "cli": "node tools/cli.mjs"
+    "cli": "node tools/cli.mjs",
+    "test:release": "node --test scripts/tests/*.test.mjs",
+    "test:e2e": "node scripts/e2e-smoke.mjs",
+    "verify:bundle": "node scripts/verify-release-build.mjs dist /repoverity/"
   },
   "engines": {
     "node": ">=22.12.0"
