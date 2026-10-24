@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { searchCommands, WORKSPACE_COMMANDS } from './commandSearch'
 
 describe('workspace search', () => {
-  it('includes all twelve available workspaces when empty', () => {
-    expect(searchCommands('')).toHaveLength(12)
-    expect(new Set(WORKSPACE_COMMANDS.map(item => item.id)).size).toBe(12)
+  it('includes all thirteen available workspaces when empty', () => {
+    expect(searchCommands('')).toHaveLength(13)
+    expect(new Set(WORKSPACE_COMMANDS.map(item => item.id)).size).toBe(13)
   })
   it('matches labels and descriptive keywords', () => {
     expect(searchCommands('starstruck').map(item => item.id)).toEqual(['achievements'])
