@@ -20,5 +20,6 @@ describe('workspace routing', () => {
   it('supports case-insensitive and trailing-slash bookmarks', () => {
     expect(workspaceFromHash('#/GROWTH/')).toBe('growth')
     expect(workspaceFromHash('#/Repositories')).toBe('repositories')
+    expect(workspaceFromHash('#/launch')).toBe('launch')
   })
 })

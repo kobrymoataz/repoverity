@@ -5,7 +5,7 @@ import {
   Clock3, Code2, Compass, Copy, Database, ExternalLink,
   FileCheck2, GitBranch, GitFork, Github, Globe2, LayoutGrid,
   MapPin, Menu, RefreshCw, Search, ShieldCheck, SlidersHorizontal, Star, TrendingUp,
-  Users, Cloud, Terminal, X, type LucideIcon,
+  Users, Cloud, Terminal, Rocket, X, type LucideIcon,
 } from 'lucide-react'
 import { useGithubProfile } from './hooks/useGithubProfile'
 import { useGrowthHistory } from './hooks/useGrowthHistory'
@@ -32,6 +32,7 @@ const CloudWorkspace = lazy(() => import('./components/CloudWorkspace').then(m =
 const CloudGrowth = lazy(() => import('./components/CloudGrowth').then(m => ({ default: m.CloudGrowth })))
 const MaintainerWorkspace = lazy(() => import('./components/MaintainerWorkspace').then(m => ({ default: m.MaintainerWorkspace })))
 const DeveloperTools = lazy(() => import('./components/DeveloperTools').then(m => ({ default: m.DeveloperTools })))
+const LaunchReadiness = lazy(() => import('./components/LaunchReadiness').then(m => ({ default: m.LaunchReadiness })))
 
 const REPOSITORY_URL = 'https://github.com/kobrymoataz/repoverity'
 
@@ -48,6 +49,7 @@ const navigation: { label: string; items: NavItem[] }[] = [
     { id: 'contributions', label: 'Find contributions', icon: Compass },
     { id: 'maintainers', label: 'Maintainer desk', icon: Users },
     { id: 'tools', label: 'Developer tools', icon: Terminal },
+    { id: 'launch', label: 'Launch readiness', icon: Rocket },
     { id: 'achievements', label: 'Achievements', icon: Award },
   ] },
   { label: 'PROJECT', items: [
@@ -65,6 +67,7 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
   advisor: { title: 'Repository audit', subtitle: 'Inspect public evidence, review maintainability signals and plan improvements.', category: 'IMPROVE' },
   maintainers: { title: 'Maintainer desk', subtitle: 'Review public issues, pull requests and contributors, then plan a private triage queue.', category: 'COLLABORATE' },
   tools: { title: 'Developer tools', subtitle: 'Shared evidence reports for the web, Terminal and GitHub Actions.', category: 'INTEGRATE' },
+  launch: { title: 'Launch readiness', subtitle: 'Public production signals and a manual release sign-off checklist.', category: 'RELEASE' },
   contributions: { title: 'Find contributions', subtitle: 'Discover open issues that welcome contributors.', category: 'CONTRIBUTE' },
   achievements: { title: 'Achievements', subtitle: 'Track GitHub achievement criteria and your own progress.', category: 'LEARN' },
   cloud: { title: 'Cloud workspaces', subtitle: 'Optional GitHub login and synced workspace preferences.', category: 'ACCOUNT' },
@@ -75,7 +78,7 @@ const viewTitles: Record<WorkspaceId, { title: string; subtitle: string; categor
 function Brand() {
   return <a className="rv-brand" href={workspaceHref('overview')} aria-label="RepoVerity home">
     <span className="rv-brand-icon"><GitBranch size={19} strokeWidth={2.15}/></span>
-    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 1.9</span></span>
+    <span className="rv-brand-name">repoverity<span className="rv-brand-version">/ 2.0</span></span>
   </a>
 }
 
@@ -327,10 +330,10 @@ function App() {
           exit={animation.reduceMotion ? { opacity: 1 } : { opacity: 0, y: -5 }}
           transition={{ duration: animation.reduceMotion ? 0 : MOTION_TIMING.navigate, ease: 'easeOut' }}>
         <SectionIntro view={active} action={isLoaded ? <button type="button" className="rv-outline-button" onClick={copyShareLink}>{copied ? <Check size={16}/> : <Copy size={16}/>} {copied ? 'Link copied' : 'Share view'}</button> : undefined}/>
-        {active !== 'cloud' && active !== 'tools' && <div className="rv-top-search"><AccountSearch value={draftUsername} setValue={value=>{setDraftUsername(value);setValidationMessage(null)}} onSubmit={onSubmit} error={validationMessage} busy={status==='loading'} inputRef={searchInputRef}/><div className="rv-top-search-footer"><span>Public GitHub accounts only. No authorization required.</span><span>Press <kbd>/</kbd> to focus search</span></div></div>}
+        {active !== 'cloud' && active !== 'tools' && active !== 'launch' && <div className="rv-top-search"><AccountSearch value={draftUsername} setValue={value=>{setDraftUsername(value);setValidationMessage(null)}} onSubmit={onSubmit} error={validationMessage} busy={status==='loading'} inputRef={searchInputRef}/><div className="rv-top-search-footer"><span>Public GitHub accounts only. No authorization required.</span><span>Press <kbd>/</kbd> to focus search</span></div></div>}
 
-        {active !== 'cloud' && active !== 'privacy' && active !== 'about' && active !== 'contributions' && active !== 'maintainers' && active !== 'tools' && status === 'loading' && <LoadingProfile/>}
-        {active !== 'cloud' && active !== 'privacy' && active !== 'about' && active !== 'contributions' && active !== 'maintainers' && active !== 'tools' && status === 'error' && <ErrorProfile message={error} retry={retry}/>}
+        {active !== 'cloud' && active !== 'privacy' && active !== 'about' && active !== 'contributions' && active !== 'maintainers' && active !== 'tools' && active !== 'launch' && status === 'loading' && <LoadingProfile/>}
+        {active !== 'cloud' && active !== 'privacy' && active !== 'about' && active !== 'contributions' && active !== 'maintainers' && active !== 'tools' && active !== 'launch' && status === 'error' && <ErrorProfile message={error} retry={retry}/>}
 
         {active === 'overview' && isLoaded && <OverviewReveal key={`overview-${snapshot.user.id}`} reduced={animation.reduceMotion}>
           <div className="rv-view rv-overview-view">
@@ -368,13 +371,14 @@ function App() {
         {active === 'advisor' && isLoaded && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Repository audit"/>}><RepositoryAuditPro key={`${snapshot.user.id}-${snapshot.fetchedAt}`} username={snapshot.user.login} repositories={snapshot.repositories}/></Suspense></div>}
         {active === 'maintainers' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Maintainer desk"/>}><MaintainerWorkspace defaultRepo={snapshot?.repositories[0]?.full_name ?? 'kobrymoataz/repoverity'} suggestedRepos={snapshot?.repositories.map(x=>x.full_name) ?? []}/></Suspense></div>}
         {active === 'tools' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Developer tools"/>}><DeveloperTools defaultRepository={snapshot?.repositories[0]?.full_name ?? 'kobrymoataz/repoverity'}/></Suspense></div>}
+        {active === 'launch' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Launch readiness"/>}><LaunchReadiness/></Suspense></div>}
         {active === 'contributions' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Contribution finder"/>}><ContributionFinder/></Suspense></div>}
         {active === 'cloud' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Cloud workspaces"/>}><CloudWorkspace/></Suspense></div>}
         {active === 'privacy' && <div className="rv-view rv-feature-page"><Suspense fallback={<AsyncFallback title="Data management"/>}><DataPortability/></Suspense></div>}
         {active === 'about' && <div className="rv-view"><AboutView/></div>}
 
         </motion.div></AnimatePresence>
-        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v1.9</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
+        <footer className="rv-footer"><span><GitBranch size={15}/>RepoVerity <span className="rv-footer-version">v2.0</span></span><span>Public data, clear methodology, open source.</span><a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">MIT licensed <ArrowUpRight size={14}/></a></footer>
       </main>
     </div>
   </div></MotionConfig>
