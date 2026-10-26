@@ -1,19 +1,18 @@
-# V1.0 Release Checklist
+# RepoVerity V2.1 release checklist
 
-- [ ] Merge or safely incorporate the V0.5 advisor into the release branch (V0.4 is still the last published version at package preparation time).
-- [ ] `npm ci` completes on Node 24 without changing the lockfile unexpectedly.
-- [ ] `npm test` passes every existing and new test.
-- [ ] `npm run typecheck` passes.
-- [ ] `npm run build:pages` passes, including asset URL verification.
-- [ ] Test `?user=kobrymoataz`, a known GitHub account, and an invalid username.
-- [ ] Check all workspaces, on-demand repository inspector, and low/no-repository cases.
-- [ ] Test backup export, import review, cancel, confirmed restore and confirmed local delete. Use a disposable/private browser session.
-- [ ] Confirm keyboard-only navigation, skip link, focus rings and reduced-motion preference.
-- [ ] Check desktop and narrow mobile layout; use browser DevTools to inspect console/network errors.
-- [ ] Open PR, review code, wait for green GitHub Actions CI, merge into `main`.
-- [ ] Confirm the **Deploy GitHub Pages** workflow is green with the compiled site.
-- [ ] Open the bare URL `https://kobrymoataz.github.io/repoverity/` with a private browsing window and normal reload.
-- [ ] Review docs and security reporting contact before public announcements.
-- [ ] Create release tag `v1.0.0` only after successful deployment.
+- [ ] Confirm the release PR is based on the merged V2.0 partial commit `4bbfd8f9217cf08cdf4ddfb2328fef41e26b6a6b`.
+- [ ] Verify `node -p "require('./package.json').version"` prints `2.1.0`.
+- [ ] Run `npm ci`, `npm run test:release`, `npm run test:toolkit`, `npm test`, `npm run typecheck`, `npm run typecheck:cloud`, `npm run test:cloud`.
+- [ ] Run `npm run lint:text`, `npm run build:pages`, `npm run test:e2e`, `npm run build:cloud`.
+- [ ] Confirm the production bundle gate detects oversized assets and private config artifacts.
+- [ ] In Chrome, check `#/launch` and `#/tools` at 390px and desktop widths, including copy and download controls.
+- [ ] Confirm the generated workflow is **not** automatically committed or installed.
+- [ ] Test `node tools/workflow.mjs --help`, plus generation of a manual read-only workflow.
+- [ ] Review all npm advisories and do not upgrade major dependencies blindly.
+- [ ] Review changes, wait for green PR CI, merge after human review.
+- [ ] Wait for green GitHub Pages deployment on main and check the live site manually.
+- [ ] Review optional Cloudflare Worker and D1 separately if deployed.
+- [ ] Only then create the `v2.1.0` tag and GitHub Release, unless the tag already exists.
+- [ ] Marketplace publication and Developer Agreement are a separate manual action, not proof of security certification.
 
-**Publishing is manual**; creating the ZIP, branch or pull request does not constitute a published V1.0 release.
+There is no completed V2.0.0 release tag in the audited repository baseline. Do not label the previous partial PR a fully verified V2.0 release. See `docs/RELEASE_V2_1.md`.

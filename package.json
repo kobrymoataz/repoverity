@@ -1,9 +1,9 @@
 {
   "name": "repoverity",
   "private": true,
-  "version": "1.9.0",
+  "version": "2.1.0",
   "type": "module",
-  "description": "Public GitHub developer workspace with accessible navigation, repository analysis and optional motion.",
+  "description": "Read-only GitHub evidence audits with production launch checks, workflow generator and optional cloud features.",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
