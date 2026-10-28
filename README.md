@@ -103,3 +103,7 @@ See [V1.8 release notes](docs/V1_8_RELEASE_NOTES.md), [Maintainer desk](docs/MAI
 Issues and pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and [SECURITY.md](SECURITY.md). Never include exported browser tracking data or tokens in public issues.
 
 Maintained by [@kobrymoataz](https://github.com/kobrymoataz). Licensed under [MIT](LICENSE).
+
+### Report Comparison Studio
+
+Export two evidence reports as JSON and compare them in **Developer Tools** or locally with `node tools/compare.mjs`. The comparison distinguishes observed regressions from unknown evidence and remains offline. See [Report Comparison](docs/REPORT_COMPARISON.md).

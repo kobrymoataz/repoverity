@@ -1,6 +1,6 @@
 import { createServer } from 'node:http'
 import { spawn } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, extname, join, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -29,28 +29,58 @@ function serve() {
   })
 }
 function getChrome() { const bin=chromeCandidates.find(existsSync); if (!bin) throw Error('Chrome or Chromium is required. Set CHROME_BIN to the local browser executable.');return bin }
+async function reserveDebugPort(){
+  const probe=createServer()
+  await new Promise((resolve,reject)=>{probe.once('error',reject);probe.listen(0,'127.0.0.1',resolve)})
+  const port=probe.address().port
+  await new Promise(resolve=>probe.close(resolve))
+  return port
+}
+function stopChrome(child,signal){
+  try { if(process.platform==='linux' && child.pid) process.kill(-child.pid,signal); else child.kill(signal) }
+  catch { try {child.kill(signal)} catch {} }
+}
 async function startChrome(profile){
-  const args=['--headless=new','--disable-gpu','--no-first-run','--no-default-browser-check','--disable-background-networking','--no-proxy-server','--remote-debugging-port=0',`--user-data-dir=${profile}`,'about:blank']
-  if(typeof process.getuid==='function' && process.getuid()===0) args.unshift('--no-sandbox')
-  const child=spawn(getChrome(),args,{stdio:'ignore'})
-  child.once('error',err=>{throw err})
-  const path=join(profile,'DevToolsActivePort')
-  let port
-  for(let i=0;i<150;i++){
-    if(child.exitCode!==null) throw Error(`Chromium exited during startup (${child.exitCode})`)
-    if(existsSync(path)){const str=readFileSync(path,'utf8').split('\n')[0];port=Number(str);if(port>0)break}
-    await sleep(100)
+  const port=await reserveDebugPort()
+  const args=['--headless=new','--disable-gpu','--disable-dev-shm-usage','--disable-extensions',
+    '--no-first-run','--no-default-browser-check','--disable-background-networking','--no-proxy-server',
+    '--remote-debugging-address=127.0.0.1',`--remote-debugging-port=${port}`,`--user-data-dir=${profile}`,'about:blank']
+  // The browser only opens a local fixture. CI runners may not support the Chrome sandbox.
+  if(process.env.CI || (typeof process.getuid==='function' && process.getuid()===0))args.unshift('--no-sandbox')
+  const child=spawn(getChrome(),args,{stdio:['ignore','ignore','pipe'],detached:process.platform==='linux'})
+  let stderr='',launchError=null
+  child.stderr?.on('data',buffer=>{stderr=(stderr+String(buffer)).slice(-2500)})
+  child.on('error',error=>{launchError=String(error)})
+  try {
+    const deadline=Date.now()+15000
+    while(Date.now()<deadline){
+      if(launchError)throw Error(`Chrome launch error: ${launchError}`)
+      if(child.exitCode!==null || child.signalCode!==null)throw Error(`Chrome exited during startup (${child.exitCode ?? child.signalCode})`)
+      try {
+        const response=await fetch(`http://127.0.0.1:${port}/json/version`,{signal:AbortSignal.timeout(750)})
+        if(response.ok){const info=await response.json();if(typeof info.webSocketDebuggerUrl==='string')return {child,port}}
+      }catch{}
+      await sleep(100)
+    }
+    throw Error('Chromium debugging endpoint did not start within 15 seconds')
+  }catch(error){
+    stopChrome(child,'SIGTERM');await sleep(160)
+    stopChrome(child,'SIGKILL')
+    const detail=stderr.trim().slice(-1100) || 'No Chrome stderr was emitted.'
+    throw Error(`${error instanceof Error?error.message:String(error)}. Chrome diagnostics: ${detail}`)
   }
-  if(!port) throw Error('Chromium DevTools endpoint did not start')
-  return {child,port}
 }
 async function openCDP(port,url){
-  const reply=await fetch(`http://127.0.0.1:${port}/json/new?${encodeURIComponent(url)}`,{method:'PUT'})
+  const reply=await fetch(`http://127.0.0.1:${port}/json/new?${encodeURIComponent(url)}`,{method:'PUT',signal:AbortSignal.timeout(timeoutMs)})
   if(!reply.ok)throw Error(`Chromium target failed with HTTP ${reply.status}`)
   const info=await reply.json()
   const ws=new WebSocket(info.webSocketDebuggerUrl)
   const pending=new Map();const exceptions=[]
-  await new Promise((resolve,reject)=>{ws.addEventListener('open',resolve,{once:true});ws.addEventListener('error',reject,{once:true})})
+  await new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>{ws.close();reject(Error('Chromium DevTools WebSocket timed out'))},timeoutMs)
+    ws.addEventListener('open',()=>{clearTimeout(timer);resolve()},{once:true})
+    ws.addEventListener('error',error=>{clearTimeout(timer);reject(error)},{once:true})
+  })
   let counter=0
   ws.addEventListener('message',event=>{
     try{const msg=JSON.parse(event.data)
@@ -72,6 +102,7 @@ async function main(){
   if(!existsSync(join(dist,'index.html')))throw Error('Missing dist/index.html: run npm run build:pages first')
   const dir=mkdtempSync(join(tmpdir(),'repoverity-e2e-'))
   let chrome
+  let webSocket
   const server=serve()
   try {
     await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve)})
@@ -80,6 +111,7 @@ async function main(){
     const startUrl = process.env.RV_E2E_FIXTURE_URL || `http://127.0.0.1:${port}/repoverity/#/launch`
     const target=await openCDP(chrome.port,startUrl)
     const {ws,send,evaluate,waitFor,exceptions}=target
+    webSocket=ws
     await waitFor("document.querySelector('main#main-content h1')?.textContent === 'Launch readiness'")
     console.log('PASS: Production app boots on the launch workspace')
     await waitFor("Array.from(document.querySelectorAll('button')).some(b=>b.textContent.includes('Run public checks'))")
@@ -109,12 +141,38 @@ async function main(){
     const wizardWidth=await evaluate('({scroll:document.documentElement.scrollWidth,viewport:document.documentElement.clientWidth})')
     if(wizardWidth.scroll>wizardWidth.viewport+4)throw Error(`Mobile workflow wizard overflows (${wizardWidth.scroll} > ${wizardWidth.viewport})`)
     console.log('PASS: Workflow permissions follow options without mobile overflow')
+    // Verify offline imports without GitHub API calls and without storing reports in the app.
+    const reportFixture = (date, status) => ({
+      schemaVersion: 1, toolVersion: '1.9.0', recordedAt: date,
+      repository: { name: 'kobrymoataz/repoverity' },
+      summary: { pass: status === 'pass' ? 1 : 0, review: status === 'review' ? 1 : 0, unknown: 0, info: 0 },
+      checks: [{ id: 'readme', section: 'Documentation', title: 'README', status, evidence: 'Fixture evidence', recommendation: 'Inspect documentation.' }],
+    })
+    const baselinePath = join(dir, 'compare-baseline.json')
+    const currentPath = join(dir, 'compare-current.json')
+    writeFileSync(baselinePath, JSON.stringify(reportFixture('2026-10-21T12:00:00.000Z', 'pass')))
+    writeFileSync(currentPath, JSON.stringify(reportFixture('2026-10-24T12:00:00.000Z', 'review')))
+    const documentNode = await send('DOM.getDocument')
+    const baselineInput = await send('DOM.querySelector', { nodeId: documentNode.root.nodeId, selector: 'input[aria-label="Import older RepoVerity JSON report"]' })
+    const currentInput = await send('DOM.querySelector', { nodeId: documentNode.root.nodeId, selector: 'input[aria-label="Import newer RepoVerity JSON report"]' })
+    if (!baselineInput.nodeId || !currentInput.nodeId) throw Error('Report comparison file inputs are unavailable')
+    await send('DOM.setFileInputFiles', { nodeId: baselineInput.nodeId, files: [baselinePath] })
+    await send('DOM.setFileInputFiles', { nodeId: currentInput.nodeId, files: [currentPath] })
+    await waitFor("document.querySelector('.rv-compare-regression')?.textContent.includes('Regression')")
+    const diffWidth = await evaluate('({scroll:document.documentElement.scrollWidth,viewport:document.documentElement.clientWidth})')
+    if (diffWidth.scroll > diffWidth.viewport + 4) throw Error(`Mobile comparison studio overflows (${diffWidth.scroll} > ${diffWidth.viewport})`)
+    console.log('PASS: Offline report imports detect a regression without mobile overflow')
     await evaluate("window.location.hash='#/overview'")
     await waitFor("document.querySelector('main#main-content h1')?.textContent === 'Overview'")
     console.log('PASS: Existing tools and overview navigation remain accessible')
     if(exceptions.length)throw Error(`Browser JavaScript exceptions: ${exceptions.slice(0,2).join('; ')}`)
     console.log('PASS: No uncaught browser JavaScript exceptions')
-    ws.close()
-  } finally {if(chrome){chrome.child.kill('SIGTERM');await sleep(220);if(chrome.child.exitCode===null)chrome.child.kill('SIGKILL')}; await new Promise(resolve=>server.close(resolve));rmSync(dir,{recursive:true,force:true})}
+  } finally {
+    try{webSocket?.close()}catch{}
+    if(chrome){stopChrome(chrome.child,'SIGTERM');await sleep(220);if(chrome.child.exitCode===null)stopChrome(chrome.child,'SIGKILL')}
+    server.closeAllConnections?.()
+    await Promise.race([new Promise(resolve=>server.close(resolve)),sleep(1800)])
+    rmSync(dir,{recursive:true,force:true})
+  }
 }
 main().catch(error=>{console.error('FAIL: '+(error instanceof Error?error.message:String(error)));process.exitCode=1})

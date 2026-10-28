@@ -29,6 +29,9 @@ jobs:
       - run: npm run test:release
       - run: npm run build:pages
       - name: Browser E2E (headless Chrome)
+        timeout-minutes: 3
+        env:
+          CI: 'true'
         run: |
           command -v google-chrome || command -v chromium || exit 1
           npm run test:e2e

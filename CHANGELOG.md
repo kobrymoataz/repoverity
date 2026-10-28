@@ -1,3 +1,12 @@
+## V2.1 Improvement Pack (unreleased PR enhancement)
+
+- Add an offline Evidence Comparison Studio to Developer Tools.
+- Add a dependency-free report comparison engine with conservative change semantics.
+- Add local CLI comparison and opt-in regressions-only CI gating.
+- Test imported snapshots and mobile layout in Chromium.
+- Bound Chromium startup, display diagnostics on failure, clean up all browser processes, and add a 3-minute CI E2E step limit.
+- Keep the V2.1.0 package version and the published v1.9.0 Action reference unchanged.
+
 # Changelog
 
 ## [2.1.0] - Release candidate

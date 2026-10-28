@@ -1,4 +1,5 @@
 import { ActionWizard } from './ActionWizard'
+import { AuditComparison } from './AuditComparison'
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { AlertCircle, ArrowRight, ArrowUpRight, CheckCircle2, ClipboardCopy, Code2, Download, FileText, Github, LoaderCircle, RefreshCw, ShieldCheck, Terminal, Workflow, X } from 'lucide-react'
 import { normalizeRepository, reportOutput, scanRepository, type AuditReport } from '../lib/scanCore.mjs'
@@ -99,6 +100,7 @@ export function DeveloperTools({ defaultRepository }: { defaultRepository: strin
       <section className="rv-dtools-card"><div className="rv-dtools-card-top"><div><span className="rv-kicker">INTEGRATION 01</span><h3><Terminal size={19}/> RepoVerity CLI</h3><p>Run the same checks locally with Node.js 22 or newer. Exports Markdown, JSON, CSV and HTML.</p></div></div><div className="rv-dtools-code"><code>{cliText}</code><button type="button" aria-label="Copy CLI command" onClick={() => void copy('cli')}><ClipboardCopy size={16}/></button></div><p className="rv-dtools-hint">Use <code>--fail-on-review</code> to opt into an exit code of 2 when review findings exist.</p>{copied==='cli' && <span className="rv-dtools-copied">Command copied.</span>}</section>
       <section className="rv-dtools-card"><div className="rv-dtools-card-top"><div><span className="rv-kicker">INTEGRATION 02</span><h3><Workflow size={19}/> GitHub Actions</h3><p>Advisory by default. Produces a JSON artifact-ready file and a workflow job summary.</p></div></div><div className="rv-dtools-code rv-dtools-code-block"><pre>{yaml}</pre><button type="button" aria-label="Copy GitHub Action workflow" onClick={() => void copy('action')}><ClipboardCopy size={16}/></button></div><p className="rv-dtools-hint">The v1.9.0 tag is published. Grant contents: read; use the builder below for custom options.</p>{copied==='action' && <span className="rv-dtools-copied">Workflow copied.</span>}</section>
     </div>
+    <AuditComparison currentReport={report}/>
     <ActionWizard defaultRepository={defaultRepository}/>
     <footer className="rv-dtools-footer"><FileText size={15}/> Reports summarize public GitHub metadata and recognized files. They cannot establish project security, compliance, or overall software quality. <a href="https://github.com/kobrymoataz/repoverity" target="_blank" rel="noopener noreferrer">Open source <ArrowRight size={14}/></a></footer>
   </div>
