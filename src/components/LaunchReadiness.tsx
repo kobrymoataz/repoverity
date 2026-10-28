@@ -56,7 +56,7 @@ export function LaunchReadiness() {
   }
   return <div className="rv-launch">
     <header className="rv-launch-hero">
-      <div><span className="rv-kicker">RELEASE OPERATIONS / V2.0</span><h2>A clearer path to launch.</h2><p>Read public release signals and record the checks only you can confirm. Nothing is published, changed, or sent to RepoVerity.</p></div>
+      <div><span className="rv-kicker">RELEASE OPERATIONS / V2.1</span><h2>A clearer path to launch.</h2><p>Read public release signals and record the checks only you can confirm. Nothing is published, changed, or sent to RepoVerity.</p></div>
       <span className="rv-launch-readonly"><ShieldCheck size={15}/> READ ONLY</span>
     </header>
     <section className="rv-launch-summary" aria-label="Release overview">
@@ -77,6 +77,6 @@ export function LaunchReadiness() {
       {storageError && <p role="status" className="rv-launch-message rv-launch-warning">Your browser did not allow saving this checklist. It may reset after a reload.</p>}
       {groups.map(group => <div key={group} className="rv-launch-group"><h4>{group}</h4><ul>{RELEASE_TASKS.filter(task => task.category === group).map(task => <li key={task.id}><label><input type="checkbox" checked={Boolean(checked[task.id])} onChange={()=>toggle(task.id)}/><span><strong>{task.title}</strong><small>{task.detail}</small></span></label></li>)}</ul></div>)}
     </section>
-    <footer className="rv-launch-footer"><ShieldCheck size={17}/><p><strong>No automatic certification.</strong> Passing these checks cannot prove uptime, privacy compliance, application security, or readiness of a separate Cloudflare deployment. A release still requires human review. <a href="https://github.com/kobrymoataz/repoverity/blob/main/docs/LAUNCH_V2_0.md" target="_blank" rel="noopener noreferrer">Launch guide <ArrowUpRight size={14}/></a></p></footer>
+    <footer className="rv-launch-footer"><ShieldCheck size={17}/><p><strong>No automatic certification.</strong> Passing these checks cannot prove uptime, privacy compliance, application security, or readiness of a separate Cloudflare deployment. A release still requires human review. <a href="https://github.com/kobrymoataz/repoverity/blob/main/docs/RELEASE_V2_1.md" target="_blank" rel="noopener noreferrer">Launch guide <ArrowUpRight size={14}/></a></p></footer>
   </div>
 }

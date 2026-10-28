@@ -32,3 +32,7 @@ See [Cloud V1.6](CLOUD_V1_6.md), [Growth History V1.7](HISTORY_V1_7.md) and [loc
 ## V1.8 personal maintainer notes
 
 The new Maintainer desk saves personal triage stages, issue/PR references and notes either in device local storage or, after signing into a configured Cloudflare deployment, in user-scoped D1 records. Notes are not posted to GitHub or shared with other users. They are not included in the original browser JSON backup. Cloud deletion cascades to all associated personal queue records; local notes must be cleared separately. See [Maintainer V1.8](MAINTAINER_V1_8.md).
+
+## V2.1 GitHub Action workflow builder
+
+The workflow builder is local and deterministic. Form settings remain in component state and are not uploaded to RepoVerity, D1, or GitHub. Copy and Download use the browser clipboard or Blob download APIs when invoked. The generated template includes `github.token` as a workflow expression, not an access token value. The CLI creates files only at a user-provided safe relative path and never overwrites an existing file.

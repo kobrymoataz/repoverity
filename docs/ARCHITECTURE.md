@@ -71,3 +71,11 @@ The `#/maintainers` workspace lazy-loads `src/components/MaintainerWorkspace.tsx
 `src/lib/scanCore.mjs` is a bounded, read-only GitHub REST scanning core imported both by the browser and the standalone Node CLI / action. The `scanCore.d.mts` file declares types for React and TypeScript. The UI component `src/components/DeveloperTools.tsx` uses the same parser and formatting functions as `tools/cli.mjs` and `action/index.mjs`. No D1 migrations, OAuth scope changes, or repository write actions were added.
 
 For limits and rollout, see [V1.9 Developer Tools](TOOLS_V1_9.md).
+
+## V2.1 release pipeline and workflows
+
+The public static Pages application, optional Cloudflare Worker, and read-only GitHub Action remain separate deployable surfaces. V2.1 restores a Chromium CDP smoke runner to the Node 24 Ubuntu CI job after the Pages production build. The smoke runner does not take screenshots or read cloud credentials. It covers Launch Readiness, Developer Tools Action workflow generation, known-offline evidence, local checklist state and a 390px viewport.
+
+The new pure workflow generator `src/lib/actionWorkflow.mjs` is shared by the optional web wizard and the local CLI `tools/workflow.mjs`. Inputs accept only a bounded public `owner/repo`, a strictly validated semver tag or full SHA, and enumerated controls. No workflow is committed, triggered, or uploaded from the web app. The CLI refuses absolute paths, path traversal, symlinked parent escapes, and existing output files. The generated action uses minimal `contents: read`, plus `actions: read` only when run sampling is selected.
+
+No V2.1 database migration, OAuth change, background job, or elevated GitHub token is introduced. Browser-local release checklist state is not shared or backed up by the Action builder.

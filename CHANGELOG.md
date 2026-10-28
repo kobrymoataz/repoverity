@@ -1,4 +1,28 @@
+## V2.1 Improvement Pack (unreleased PR enhancement)
+
+- Add an offline Evidence Comparison Studio to Developer Tools.
+- Add a dependency-free report comparison engine with conservative change semantics.
+- Add local CLI comparison and opt-in regressions-only CI gating.
+- Test imported snapshots and mobile layout in Chromium.
+- Bound Chromium startup, display diagnostics on failure, clean up all browser processes, and add a 3-minute CI E2E step limit.
+- Keep the V2.1.0 package version and the published v1.9.0 Action reference unchanged.
+
 # Changelog
+
+## [2.1.0] - Release candidate
+
+- Restore the missing V2.0 headless Chrome Pages checks, release tests, and gzip/private-artifact production build gates to CI.
+- Add a bounded and validated GitHub Actions workflow generator to Developer Tools and Terminal.
+- Allow explicit trigger, public repository, reviewed action version/SHA, run sampling, optional review gates and optional report artifacts.
+- Keep generated workflows advisory, manual, read-only and scoped to minimal permissions by default.
+- Add 12 workflow generator tests, checks for unsafe paths, mobile navigation smoke coverage, and truthful release readiness documentation.
+- Preserve all previous workspaces, OAuth, D1 tables, and public GitHub Pages compatibility without new dependencies.
+
+## V2.0 partial merge (no completed release tag)
+
+- GitHub PR #22 merged the release engine and Launch Readiness workspace, but omitted its browser CI and release metadata stages.
+- V2.1 finishes those missing gates before a new version is tagged and published.
+
 
 ## [1.9.0] - Prepared for release
 

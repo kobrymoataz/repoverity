@@ -8,7 +8,7 @@
 
 [Live application](https://kobrymoataz.github.io/repoverity/) | [Source](https://github.com/kobrymoataz/repoverity) | [Issues](https://github.com/kobrymoataz/repoverity/issues) | [Contributing](CONTRIBUTING.md)
 
-RepoVerity turns public GitHub metadata into a structured, read-only developer workspace. V1.1 replaced the long dashboard with focused workspaces. V1.2 added restrained motion and a keyboard-first quick switch. V1.3 added Repository Explorer Pro with on-demand pagination, comparisons and saved views. V1.4 added developer analytics, public profile comparisons and optional activity inspection. V1.5 adds an evidence-based repository audit workbench with public file, workflow and documentation checks. V1.6 adds optional same-origin cloud workspaces using GitHub OAuth, Cloudflare Workers and D1. V1.7 adds opt-in scheduled public profile and repository snapshots for cloud users, with measured charts and on-site milestones. V1.8 introduces a public maintainer desk and private planning queues with optional per-user cloud syncing. V1.9 adds a public evidence report engine shared by the web, CLI, and optional GitHub Action. Public GitHub Pages remains available without sign-in.
+RepoVerity turns public GitHub metadata into a structured, read-only developer workspace. V1.1 replaced the long dashboard with focused workspaces. V1.2 added restrained motion and a keyboard-first quick switch. V1.3 added Repository Explorer Pro with on-demand pagination, comparisons and saved views. V1.4 added developer analytics, public profile comparisons and optional activity inspection. V1.5 adds an evidence-based repository audit workbench with public file, workflow and documentation checks. V1.6 adds optional same-origin cloud workspaces using GitHub OAuth, Cloudflare Workers and D1. V1.7 adds opt-in scheduled public profile and repository snapshots for cloud users, with measured charts and on-site milestones. V1.8 introduces a public maintainer desk and private planning queues with optional per-user cloud syncing. V1.9 adds a public evidence report engine shared by the web, CLI, and optional GitHub Action. V2.1 completes missing production quality gates from the partially merged V2.0 and adds a safe GitHub Actions workflow builder. Public GitHub Pages remains available without sign-in.
 
 ## Workspaces
 
@@ -19,7 +19,8 @@ RepoVerity turns public GitHub metadata into a structured, read-only developer w
 | Analytics Pro | Latest-push distribution, portfolio sampling, second-profile comparisons and on-demand contributor, release, issue and PR views |
 | Growth history | Local browser observations, plus optional cloud-backed profile and repository readings with measured charts, in-app milestones and CSV export |
 | Repository audit | Evidence Audit 2.0 for README, community files, workflow activity and a root manifest; previous metadata advisor remains available |
-| Developer tools | Unified public evidence scanner with CLI, GitHub Action, JSON/CSV/Markdown/HTML exports and print-to-PDF support |
+| Developer tools | Public evidence scanner, CLI, Action workflow builder and export tools |
+| Launch readiness | Opt-in browser-local release checklist, public-only signals and verifiable deployment preflight |
 | Maintainer desk | Read public issues and pull requests, inspect contributors and plan personal follow-ups with private notes and CSV export |
 | Find contributions | Open and unassigned issues labeled by maintainers |
 | Achievements | Educational requirements and a manual progress checklist |
@@ -70,6 +71,23 @@ The Pages build verifies that output paths use `/repoverity/` and point to compi
 
 Run `node tools/cli.mjs --help` for a read-only public evidence report. The report engine is shared with the Developer Tools workspace at `#/tools` and the optional Node 24 GitHub Action. See [V1.9 Developer Tools](docs/TOOLS_V1_9.md) for examples, limitations, and tag publication requirements.
 
+
+## V2.1 Release Assurance and Workflow Builder
+
+V2.1 repairs the partial V2.0 release pipeline: full browser smoke tests and production build budgets now run in CI. The Launch Readiness page remains read-only. The Developer Tools page includes a workflow builder for RepoVerity Action with explicit trigger, permission, report and review-gate options.
+
+The default generated workflow uses published `kobrymoataz/repoverity@v1.9.0`, reads only public repository evidence and does not activate automatically. When `v2.1.0` has been published, maintainers may opt into that reference after testing. A SHA-pinned reference is available for deployments that require immutable action code. See [V2.1 workflow guide](docs/MARKETPLACE_V2_1.md).
+
+```bash
+npm run workflow -- --help
+npm run workflow -- --repo octocat/Hello-World --artifact --output repoverity-audit.yml
+npm run test:release
+npm run build:pages
+npm run test:e2e
+```
+
+V2.1 requires no new npm dependencies and no changes to Cloudflare Worker, OAuth, or D1 migrations. GitHub Pages remains an unauthenticated public experience. The 2.0.0 tag was not published when this release kit was prepared; the previous partial merge was not a complete V2.0 release. See [release and rollback guide](docs/RELEASE_V2_1.md).
+
 ## Optional Cloudflare deployment
 
 V1.6 includes a Cloudflare Worker that serves the frontend and JSON API together. Run `npm run typecheck:cloud`, `npm run test:cloud` and `npm run build:cloud` before provisioning. The maintained public GitHub Pages site remains anonymous with cloud features disabled by default. To enable secure sign-in, create a Cloudflare D1 database, a GitHub OAuth App and the required secret yourself. Follow the [Cloud setup guide](docs/CLOUD_V1_6.md). No real cloud service or credentials are shipped with the source. For V1.7 scheduled observations, apply the second D1 migration, configure the private Cron Trigger at 07:15 UTC and deploy the updated Worker. See [Historical Growth Intelligence](docs/HISTORY_V1_7.md). For V1.8 private worklists, apply the third D1 migration before deploying the updated Worker. See [Maintainer desk](docs/MAINTAINER_V1_8.md).
@@ -85,3 +103,7 @@ See [V1.8 release notes](docs/V1_8_RELEASE_NOTES.md), [Maintainer desk](docs/MAI
 Issues and pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and [SECURITY.md](SECURITY.md). Never include exported browser tracking data or tokens in public issues.
 
 Maintained by [@kobrymoataz](https://github.com/kobrymoataz). Licensed under [MIT](LICENSE).
+
+### Report Comparison Studio
+
+Export two evidence reports as JSON and compare them in **Developer Tools** or locally with `node tools/compare.mjs`. The comparison distinguishes observed regressions from unknown evidence and remains offline. See [Report Comparison](docs/REPORT_COMPARISON.md).
